@@ -7,11 +7,12 @@
   outputs = {
     nixpkgs,
     flake-utils,
+    ...
   }:
     flake-utils.lib.eachDefaultSystem (system: let
       pkgs = import nixpkgs {inherit system;};
     in {
-      devShell.default = pkgs.mkShell {
+      devShells.default = pkgs.mkShell {
         packages = [pkgs.nodejs];
       };
     });
