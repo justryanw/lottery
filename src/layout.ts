@@ -5,8 +5,8 @@ interface Layout {
 	direction: 'x' | 'y';
 	padding: number;
 	spacing: number;
-	xsizing: 'fit' | number;
-	ysizing: 'fit' | number;
+	xsizing: 'fit' | 'grow' | number;
+	ysizing: 'fit' | 'grow' | number;
 	xcalculated: number,
 	ycalculated: number,
 }
@@ -38,7 +38,7 @@ export function hasLayoutMixin(obj: any): obj is { layout: Layout; } {
 export const LayoutContainer = WithLayout(Container);
 // export const LayoutSprite = WithLayout(Sprite);
 
-function sizeContainers(container: Container) {
+function sizingFitContainers(container: Container) {
 	if (!hasLayoutMixin(container)) return;
 	const { spacing, padding, direction } = container.layout;
 	const along = direction;
@@ -50,7 +50,7 @@ function sizeContainers(container: Container) {
 
 	container.children.forEach((child) => {
 		if (!hasLayoutMixin(child)) return;
-		sizeContainers(child)
+		sizingFitContainers(child)
 		layoutChildrenCount++;
 
 		if (isNumber(child.layout.xsizing)) child.layout.xcalculated = child.layout.xsizing;
@@ -60,13 +60,53 @@ function sizeContainers(container: Container) {
 		maxChildSizeAcross = Math.max(maxChildSizeAcross, child.layout[`${across}calculated`]);
 	});
 
-	if (container.layout[`${along}sizing`] === 'fit') {
+	const alongSizing = container.layout[`${along}sizing`];
+	if (alongSizing === 'fit' || alongSizing === 'grow') {
 		container.layout[`${along}calculated`] = childSizeAlong + spacing * (layoutChildrenCount - 1) + padding * 2;
 	}
 
-	if (container.layout[`${across}sizing`] === 'fit') {
+	const acrossSizing = container.layout[`${across}sizing`];
+	if (acrossSizing === 'fit' || alongSizing === 'grow') {
 		container.layout[`${across}calculated`] = maxChildSizeAcross + padding * 2;
 	}
+}
+
+function sizingGrowContainers(container: Container) {
+	if (!hasLayoutMixin(container)) return;
+	const { padding, spacing, direction } = container.layout;
+	const along = direction;
+	const across: 'x' | 'y' = along === 'x' ? 'y' : 'x';
+
+	let layoutChildrenCount = 0;
+	container.children.forEach((countChild) => {
+		if (!hasLayoutMixin(countChild)) return;
+		layoutChildrenCount++;
+	});
+
+	container.children.forEach((child) => {
+		if (!hasLayoutMixin(child)) return;
+
+		if (child.layout[`${along}sizing`] === 'grow') {
+			// child.layout.xcalculated = 10;
+			let remainingWidth = container.layout[`${along}calculated`];
+			remainingWidth -= container.layout.padding * 2;
+			remainingWidth -= (layoutChildrenCount - 1) * spacing;
+
+			container.children.forEach((widthChild) => {
+				if (!hasLayoutMixin(widthChild)) return;
+				remainingWidth -= widthChild.layout[`${along}calculated`]
+			});
+
+			console.log(remainingWidth);
+			child.layout[`${along}calculated`] = remainingWidth;
+		}
+
+		if (child.layout[`${across}sizing`] === 'grow') {
+			child.layout[`${across}calculated`] = container.layout[`${across}calculated`] - padding * 2;
+		}
+
+		sizingGrowContainers(child);
+	});
 }
 
 function positionContainers(container: Container) {
@@ -119,7 +159,8 @@ function drawDebug(container: Container, graphics: Graphics, depth = 0) {
 }
 
 export function layout(container: Container, debugGraphics?: Graphics) {
-	sizeContainers(container);
+	sizingFitContainers(container);
+	sizingGrowContainers(container)
 	positionContainers(container);
 
 	if (debugGraphics) drawDebug(container, debugGraphics);
