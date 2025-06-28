@@ -50,6 +50,9 @@ function sizingFitContainers(container: Container) {
 
 	container.children.forEach((child) => {
 		if (!hasLayoutMixin(child)) return;
+		child.layout.xcalculated = 0;
+		child.layout.ycalculated = 0;
+
 		sizingFitContainers(child)
 		layoutChildrenCount++;
 
@@ -61,12 +64,12 @@ function sizingFitContainers(container: Container) {
 	});
 
 	const alongSizing = container.layout[`${along}sizing`];
-	if (alongSizing === 'fit' || alongSizing === 'grow') {
+	if (alongSizing === 'fit') {
 		container.layout[`${along}calculated`] = childSizeAlong + spacing * (layoutChildrenCount - 1) + padding * 2;
 	}
 
 	const acrossSizing = container.layout[`${across}sizing`];
-	if (acrossSizing === 'fit' || alongSizing === 'grow') {
+	if (acrossSizing === 'fit') {
 		container.layout[`${across}calculated`] = maxChildSizeAcross + padding * 2;
 	}
 }
@@ -87,7 +90,6 @@ function sizingGrowContainers(container: Container) {
 		if (!hasLayoutMixin(child)) return;
 
 		if (child.layout[`${along}sizing`] === 'grow') {
-			// child.layout.xcalculated = 10;
 			let remainingWidth = container.layout[`${along}calculated`];
 			remainingWidth -= container.layout.padding * 2;
 			remainingWidth -= (layoutChildrenCount - 1) * spacing;
@@ -97,7 +99,6 @@ function sizingGrowContainers(container: Container) {
 				remainingWidth -= widthChild.layout[`${along}calculated`]
 			});
 
-			console.log(remainingWidth);
 			child.layout[`${along}calculated`] = remainingWidth;
 		}
 

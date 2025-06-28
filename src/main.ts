@@ -24,12 +24,13 @@ import { arrayFrom } from "./utils";
 		row.layout.direction = 'x';
 		row.layout.spacing = 10;
 
-		if (i === 0) {
+		if (i === 0) row.layout.xsizing = 'grow';
+		if (i === 1) row.layout.xsizing = 500;
+		if (i === 5) {
 			row.layout.xsizing = 'grow';
+			row.layout.ysizing = 'grow';
 		}
-		if (i === 1) {
-			row.layout.xsizing = 500;
-		}
+
 		const cells = i === 0 ? 4 : 5;
 
 		arrayFrom(cells, (x) => {
@@ -42,15 +43,24 @@ import { arrayFrom } from "./utils";
 				cell.layout.ysizing = 'grow';
 			}
 
+			if (i === 5 && x === 3) {
+				cell.layout.xsizing = 'grow';
+				cell.layout.ysizing = 'grow';
+			}
+
 			row.addChild(cell);
 		});
 	})
 
 	debugGraphics.alpha = 1;
 
-	layout(container, debugGraphics);
-	app.renderer.on('resize', () => {
+	const onResize = () => {
 		debugGraphics.clear();
+		container.layout.xsizing = container.layout.xcalculated = app.renderer.width;
+		container.layout.ysizing = container.layout.ycalculated = app.renderer.height;
 		layout(container, debugGraphics)
-	});
+	};
+
+	app.renderer.on('resize', onResize);
+	onResize();
 })();
