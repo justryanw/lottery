@@ -21,31 +21,31 @@ import { arrayFrom } from "./utils";
 	arrayFrom(10, (i) => {
 		const row = new LayoutContainer();
 		container.addChild(row);
-		row.layout.direction = 'x';
+		row.layout.layoutDirection = 'x';
 		row.layout.spacing = 10;
 
-		if (i === 0) row.layout.xsizing = 'grow';
-		if (i === 1) row.layout.xsizing = 500;
+		if (i === 0) row.layout.x.sizing = 'grow';
+		if (i === 1) row.layout.x.sizing = 500;
 		if (i === 5) {
-			row.layout.xsizing = 'grow';
-			row.layout.ysizing = 'grow';
+			row.layout.x.sizing = 'grow';
+			row.layout.y.sizing = 'grow';
 		}
 
 		const cells = i === 0 ? 4 : 5;
 
 		arrayFrom(cells, (x) => {
 			const cell = new LayoutContainer();
-			cell.layout.xsizing = 64;
-			cell.layout.ysizing = 64;
+			cell.layout.x.sizing = 64;
+			cell.layout.y.sizing = 64;
 
 			if (i === 0 && x === 2) {
-				cell.layout.xsizing = 'grow';
-				cell.layout.ysizing = 'grow';
+				cell.layout.x.sizing = 'grow';
+				cell.layout.y.sizing = 'grow';
 			}
 
 			if (i === 5 && x === 3) {
-				cell.layout.xsizing = 'grow';
-				cell.layout.ysizing = 'grow';
+				cell.layout.x.sizing = 'grow';
+				cell.layout.y.sizing = 'grow';
 			}
 
 			row.addChild(cell);
@@ -56,8 +56,8 @@ import { arrayFrom } from "./utils";
 
 	const onResize = () => {
 		debugGraphics.clear();
-		container.layout.xsizing = container.layout.xcalculated = app.renderer.width;
-		container.layout.ysizing = container.layout.ycalculated = app.renderer.height;
+		container.layout.x.sizing = container.layout.x.length = app.renderer.width;
+		container.layout.y.sizing = container.layout.y.length = app.renderer.height;
 		layout(container, debugGraphics)
 	};
 

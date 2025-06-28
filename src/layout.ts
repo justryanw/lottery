@@ -1,32 +1,26 @@
 import { Color, Container, Graphics } from "pixi.js";
 import { isNumber } from "./utils";
 
-interface Layout {
-	direction: 'x' | 'y';
-	padding: number;
-	spacing: number;
-	xsizing: 'fit' | 'grow' | number;
-	ysizing: 'fit' | 'grow' | number;
-	xcalculated: number,
-	ycalculated: number,
+class Axis {
+	sizing: 'fit' | 'grow' | number = 'fit';
+	length: number = 0;
 }
 
-function WithLayout<
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	TBase extends new (...args: any[]) => any
->(
-	Base: TBase
-) {
+class Layout {
+	layoutDirection: 'x' | 'y' = 'y';
+	padding: number = 0;
+	spacing: number = 0;
+	x: Axis = new Axis();
+	y: Axis = new Axis();
+
+	get along() { return this.layoutDirection }
+	get across() { return this.layoutDirection === 'x' ? 'y' : 'x' }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function WithLayout<TBase extends new (...args: any[]) => any>(Base: TBase) {
 	return class extends Base {
-		layout: Layout = {
-			direction: 'y',
-			padding: 0,
-			spacing: 0,
-			xsizing: 'fit',
-			ysizing: 'fit',
-			xcalculated: 0,
-			ycalculated: 0,
-		};
+		layout: Layout = new Layout();
 	};
 }
 
@@ -40,9 +34,7 @@ export const LayoutContainer = WithLayout(Container);
 
 function sizingFitContainers(container: Container) {
 	if (!hasLayoutMixin(container)) return;
-	const { spacing, padding, direction } = container.layout;
-	const along = direction;
-	const across: 'x' | 'y' = along === 'x' ? 'y' : 'x';
+	const { spacing, padding, along, across } = container.layout;
 
 	let layoutChildrenCount = 0;
 	let childSizeAlong = 0;
@@ -50,35 +42,33 @@ function sizingFitContainers(container: Container) {
 
 	container.children.forEach((child) => {
 		if (!hasLayoutMixin(child)) return;
-		child.layout.xcalculated = 0;
-		child.layout.ycalculated = 0;
+		child.layout.x.length = 0;
+		child.layout.y.length = 0;
 
 		sizingFitContainers(child)
 		layoutChildrenCount++;
 
-		if (isNumber(child.layout.xsizing)) child.layout.xcalculated = child.layout.xsizing;
-		if (isNumber(child.layout.ysizing)) child.layout.ycalculated = child.layout.ysizing;
+		if (isNumber(child.layout.x.sizing)) child.layout.x.length = child.layout.x.sizing;
+		if (isNumber(child.layout.y.sizing)) child.layout.y.length = child.layout.y.sizing;
 
-		childSizeAlong += child.layout[`${along}calculated`];
-		maxChildSizeAcross = Math.max(maxChildSizeAcross, child.layout[`${across}calculated`]);
+		childSizeAlong += child.layout[along].length;
+		maxChildSizeAcross = Math.max(maxChildSizeAcross, child.layout[across].length);
 	});
 
-	const alongSizing = container.layout[`${along}sizing`];
+	const alongSizing = container.layout[along].sizing;
 	if (alongSizing === 'fit') {
-		container.layout[`${along}calculated`] = childSizeAlong + spacing * (layoutChildrenCount - 1) + padding * 2;
+		container.layout[along].length = childSizeAlong + spacing * (layoutChildrenCount - 1) + padding * 2;
 	}
 
-	const acrossSizing = container.layout[`${across}sizing`];
+	const acrossSizing = container.layout[across].sizing;
 	if (acrossSizing === 'fit') {
-		container.layout[`${across}calculated`] = maxChildSizeAcross + padding * 2;
+		container.layout[across].length = maxChildSizeAcross + padding * 2;
 	}
 }
 
 function sizingGrowContainers(container: Container) {
 	if (!hasLayoutMixin(container)) return;
-	const { padding, spacing, direction } = container.layout;
-	const along = direction;
-	const across: 'x' | 'y' = along === 'x' ? 'y' : 'x';
+	const { padding, spacing, along, across } = container.layout;
 
 	let layoutChildrenCount = 0;
 	container.children.forEach((countChild) => {
@@ -89,21 +79,21 @@ function sizingGrowContainers(container: Container) {
 	container.children.forEach((child) => {
 		if (!hasLayoutMixin(child)) return;
 
-		if (child.layout[`${along}sizing`] === 'grow') {
-			let remainingWidth = container.layout[`${along}calculated`];
+		if (child.layout[along].sizing === 'grow') {
+			let remainingWidth = container.layout[along].length;
 			remainingWidth -= container.layout.padding * 2;
 			remainingWidth -= (layoutChildrenCount - 1) * spacing;
 
 			container.children.forEach((widthChild) => {
 				if (!hasLayoutMixin(widthChild)) return;
-				remainingWidth -= widthChild.layout[`${along}calculated`]
+				remainingWidth -= widthChild.layout[along].length;
 			});
 
-			child.layout[`${along}calculated`] = remainingWidth;
+			child.layout[along].length = remainingWidth;
 		}
 
-		if (child.layout[`${across}sizing`] === 'grow') {
-			child.layout[`${across}calculated`] = container.layout[`${across}calculated`] - padding * 2;
+		if (child.layout[across].sizing === 'grow') {
+			child.layout[across].length = container.layout[across].length - padding * 2;
 		}
 
 		sizingGrowContainers(child);
@@ -112,9 +102,7 @@ function sizingGrowContainers(container: Container) {
 
 function positionContainers(container: Container) {
 	if (!hasLayoutMixin(container)) return;
-	const { spacing, padding, direction } = container.layout;
-	const along = direction;
-	const across: 'x' | 'y' = along === 'x' ? 'y' : 'x';
+	const { spacing, padding, along, across } = container.layout;
 
 	let alongOffset = padding;
 
@@ -122,7 +110,7 @@ function positionContainers(container: Container) {
 		if (!hasLayoutMixin(child)) return;
 
 		child.position[along] = alongOffset;
-		alongOffset += child.layout[`${along}calculated`] + spacing;
+		alongOffset += child.layout[along].length + spacing;
 
 		child.position[across] = padding;
 
@@ -148,7 +136,7 @@ function drawDebug(container: Container, graphics: Graphics, depth = 0) {
 	})
 
 	graphics
-		.rect(x, y, container.layout.xcalculated, container.layout.ycalculated)
+		.rect(x, y, container.layout.x.length, container.layout.y.length)
 		.fill({ color, alpha: 1 })
 		.stroke({ width: 3, alignment: 1, color: strokeColor });
 
