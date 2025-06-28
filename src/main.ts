@@ -1,4 +1,4 @@
-import { Application, Assets, Container, Sprite } from "pixi.js";
+import { Application, Assets, Color, Container, Graphics, Sprite } from "pixi.js";
 import { initDevtools } from '@pixi/devtools';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -92,9 +92,35 @@ function positionContainers(container: Container) {
 	});
 }
 
-function layout(container: Container) {
+function drawDebug(container: Container, graphics: Graphics) {
+	if (!hasLayoutMixin(container)) return;
+
+	const { x, y } = container.getGlobalPosition()
+
+	graphics
+		.fill({ color: getRandomHSLColor(), alpha: 1 })
+		.rect(x, y, container.layout.xcalculated, container.layout.ycalculated);
+
+	container.children.forEach((child) => {
+		if (!hasLayoutMixin(child)) return;
+		drawDebug(child, graphics);
+	});
+
+}
+
+function getRandomHSLColor() {
+	return new Color().setValue({
+		r: Math.random() * 255,
+		g: Math.random() * 255,
+		b: Math.random() * 255,
+	});
+}
+
+function layout(container: Container, debugGraphics?: Graphics) {
 	sizeContainers(container);
 	positionContainers(container);
+
+	if (debugGraphics) drawDebug(container, debugGraphics);
 }
 
 (async () => {
@@ -102,13 +128,14 @@ function layout(container: Container) {
 	await app.init({ background: "#1099bb", resizeTo: window });
 	initDevtools({ app });
 
+
 	document.getElementById("pixi-container")!.appendChild(app.canvas);
 	app.renderer.on('resize', () => layout(app.stage));
 
 	const container = new LayoutContainer();
 	app.stage.addChild(container);
-	container.layout.padding = 0;
-	container.layout.spacing = 0;
+	container.layout.padding = 2;
+	container.layout.spacing = 2;
 
 	const texture = await Assets.load("/assets/bunny.png");
 
@@ -116,7 +143,7 @@ function layout(container: Container) {
 		const row = new LayoutContainer();
 		container.addChild(row);
 		row.layout.direction = 'x';
-		row.layout.spacing = 0;
+		row.layout.spacing = 2;
 
 		Array.from({ length: 5 }, () => {
 			const bunny = new LayoutSprite(texture);
@@ -128,7 +155,9 @@ function layout(container: Container) {
 		return row;
 	})
 
-	layout(container);
+	const debugGraphics = new Graphics();
+	app.stage.addChild(debugGraphics);
+	layout(container, debugGraphics);
 
 	console.log(rows.map((row) => row.layout));
 	console.log(container.layout);
