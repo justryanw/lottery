@@ -1,4 +1,4 @@
-import { Application, Assets, Color, Container, Graphics, Sprite } from "pixi.js";
+import { Application, Color, Container, Graphics } from "pixi.js";
 import { initDevtools } from '@pixi/devtools';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -39,7 +39,7 @@ function hasLayoutMixin(obj: any): obj is { layout: Layout; } {
 }
 
 const LayoutContainer = WithLayout(Container);
-const LayoutSprite = WithLayout(Sprite);
+// const LayoutSprite = WithLayout(Sprite);
 
 function sizeContainers(container: Container) {
 	if (!hasLayoutMixin(container)) return;
@@ -92,28 +92,33 @@ function positionContainers(container: Container) {
 	});
 }
 
-function drawDebug(container: Container, graphics: Graphics) {
+function drawDebug(container: Container, graphics: Graphics, depth = 0) {
 	if (!hasLayoutMixin(container)) return;
 
 	const { x, y } = container.getGlobalPosition()
 
+	const color = new Color().setValue({
+		h: 40 * depth,
+		s: 60,
+		v: 100
+	})
+
+	const strokeColor = new Color().setValue({
+		h: 40 * depth,
+		s: 50,
+		v: 50
+	})
+
 	graphics
-		.fill({ color: getRandomHSLColor(), alpha: 1 })
-		.rect(x, y, container.layout.xcalculated, container.layout.ycalculated);
+		.rect(x, y, container.layout.xcalculated, container.layout.ycalculated)
+		.fill({ color, alpha: 1 })
+		.stroke({ width: 3, alignment: 1, color: strokeColor });
 
 	container.children.forEach((child) => {
 		if (!hasLayoutMixin(child)) return;
-		drawDebug(child, graphics);
+		drawDebug(child, graphics, depth + 1);
 	});
 
-}
-
-function getRandomHSLColor() {
-	return new Color().setValue({
-		r: Math.random() * 255,
-		g: Math.random() * 255,
-		b: Math.random() * 255,
-	});
 }
 
 function layout(container: Container, debugGraphics?: Graphics) {
@@ -130,34 +135,42 @@ function layout(container: Container, debugGraphics?: Graphics) {
 
 
 	document.getElementById("pixi-container")!.appendChild(app.canvas);
-	app.renderer.on('resize', () => layout(app.stage));
+	const debugGraphics = new Graphics();
+	app.stage.addChild(debugGraphics);
 
 	const container = new LayoutContainer();
 	app.stage.addChild(container);
-	container.layout.padding = 2;
-	container.layout.spacing = 2;
+	container.layout.padding = 10;
+	container.layout.spacing = 20;
 
-	const texture = await Assets.load("/assets/bunny.png");
+	// const texture = await Assets.load("/assets/bunny.png");
 
-	const rows = Array.from({ length: 5 }, () => {
+	const rows = Array.from({ length: 10 }, (_, i) => {
 		const row = new LayoutContainer();
 		container.addChild(row);
 		row.layout.direction = 'x';
-		row.layout.spacing = 2;
+		row.layout.spacing = 20;
 
-		Array.from({ length: 5 }, () => {
-			const bunny = new LayoutSprite(texture);
-			bunny.layout.xsizing = texture.width;
-			bunny.layout.ysizing = texture.height;
-			row.addChild(bunny);
+		const cells = i === 0 ? 4 : 5;
+
+		Array.from({ length: cells }, () => {
+			const cell = new LayoutContainer();
+			cell.layout.xsizing = 60;
+			cell.layout.ysizing = 60;
+
+			row.addChild(cell);
 		})
 
 		return row;
 	})
 
-	const debugGraphics = new Graphics();
-	app.stage.addChild(debugGraphics);
+	debugGraphics.alpha = 1;
+
 	layout(container, debugGraphics);
+	app.renderer.on('resize', () => {
+		debugGraphics.clear();
+		layout(container, debugGraphics)
+	});
 
 	console.log(rows.map((row) => row.layout));
 	console.log(container.layout);
