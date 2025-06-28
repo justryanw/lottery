@@ -1,9 +1,17 @@
 import { Application, Assets, Container, Sprite } from "pixi.js";
+import { initDevtools } from '@pixi/devtools';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const isNumber = (val: any) => typeof val === "number";
 
 interface Layout {
-	direction: 'vertical' | 'horizontal';
+	direction: 'x' | 'y';
 	padding: number;
 	spacing: number;
+	xsizing: 'fit' | number;
+	ysizing: 'fit' | number;
+	xcalculated: number,
+	ycalculated: number,
 }
 
 function WithLayout<
@@ -14,9 +22,13 @@ function WithLayout<
 ) {
 	return class extends Base {
 		layout: Layout = {
-			direction: 'vertical',
+			direction: 'y',
 			padding: 0,
 			spacing: 0,
+			xsizing: 'fit',
+			ysizing: 'fit',
+			xcalculated: 0,
+			ycalculated: 0,
 		};
 	};
 }
@@ -29,46 +41,95 @@ function hasLayoutMixin(obj: any): obj is { layout: Layout; } {
 const LayoutContainer = WithLayout(Container);
 const LayoutSprite = WithLayout(Sprite);
 
-function layout(container: Container) {
+function sizeContainers(container: Container) {
+	if (!hasLayoutMixin(container)) return;
+	const { spacing, padding, direction } = container.layout;
+	const along = direction;
+	const across: 'x' | 'y' = along === 'x' ? 'y' : 'x';
 
-	if (hasLayoutMixin(container)) {
-		let offset = container.layout.padding;
-		container.children.forEach((child) => {
-			if (hasLayoutMixin(child)) {
-				child.y = container.layout.padding;
-				child.x = offset;
-				offset += child.width + container.layout.spacing;
-			}
-		});
+	let layoutChildrenCount = 0;
+	let childSizeAlong = 0;
+	let maxChildSizeAcross = 0;
+
+	container.children.forEach((child) => {
+		if (!hasLayoutMixin(child)) return;
+		sizeContainers(child)
+		layoutChildrenCount++;
+
+		if (isNumber(child.layout.xsizing)) child.layout.xcalculated = child.layout.xsizing;
+		if (isNumber(child.layout.ysizing)) child.layout.ycalculated = child.layout.ysizing;
+
+		childSizeAlong += child.layout[`${along}calculated`];
+		maxChildSizeAcross = Math.max(maxChildSizeAcross, child.layout[`${across}calculated`]);
+	});
+
+	if (container.layout[`${along}sizing`] === 'fit') {
+		container.layout[`${along}calculated`] = childSizeAlong + spacing * (layoutChildrenCount - 1) + padding * 2;
 	}
 
-	container.children.forEach((child) => layout(child));
+	if (container.layout[`${across}sizing`] === 'fit') {
+		container.layout[`${across}calculated`] = maxChildSizeAcross + padding * 2;
+	}
+}
+
+function positionContainers(container: Container) {
+	if (!hasLayoutMixin(container)) return;
+	const { spacing, padding, direction } = container.layout;
+	const along = direction;
+	const across: 'x' | 'y' = along === 'x' ? 'y' : 'x';
+
+	let alongOffset = padding;
+
+	container.children.forEach((child) => {
+		if (!hasLayoutMixin(child)) return;
+
+		child.position[along] = alongOffset;
+		alongOffset += child.layout[`${along}calculated`] + spacing;
+
+		child.position[across] = padding;
+
+		positionContainers(child);
+	});
+}
+
+function layout(container: Container) {
+	sizeContainers(container);
+	positionContainers(container);
 }
 
 (async () => {
 	const app = new Application();
 	await app.init({ background: "#1099bb", resizeTo: window });
+	initDevtools({ app });
+
 	document.getElementById("pixi-container")!.appendChild(app.canvas);
 	app.renderer.on('resize', () => layout(app.stage));
 
 	const container = new LayoutContainer();
 	app.stage.addChild(container);
-	container.layout.padding = 10;
-	container.layout.spacing = 2;
+	container.layout.padding = 0;
+	container.layout.spacing = 0;
 
 	const texture = await Assets.load("/assets/bunny.png");
 
-	const bunny = new LayoutSprite(texture);
-	container.addChild(bunny);
+	const rows = Array.from({ length: 5 }, () => {
+		const row = new LayoutContainer();
+		container.addChild(row);
+		row.layout.direction = 'x';
+		row.layout.spacing = 0;
 
-	Array.from({ length: 5 }, () => {
-		const bunny2 = new LayoutSprite(texture);
-		container.addChild(bunny2);
+		Array.from({ length: 5 }, () => {
+			const bunny = new LayoutSprite(texture);
+			bunny.layout.xsizing = texture.width;
+			bunny.layout.ysizing = texture.height;
+			row.addChild(bunny);
+		})
+
+		return row;
 	})
 
-	// app.ticker.add((time) => {
-	// 	bunny.rotation += 0.1 * time.deltaTime;
-	// });
+	layout(container);
 
-	layout(app.stage);
+	console.log(rows.map((row) => row.layout));
+	console.log(container.layout);
 })();
