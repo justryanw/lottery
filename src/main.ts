@@ -28,8 +28,8 @@ import { arrayFrom } from "./utils";
 
 		if (i === 0) {
 			row.layout.x.sizing = 'grow';
+			row.layout.y.sizing = 'grow';
 		}
-		if (i === 1) row.layout.x.sizing = 500;
 		if (i === 5) {
 			row.layout.x.sizing = 'grow';
 			row.layout.y.sizing = 'grow';
@@ -42,13 +42,16 @@ import { arrayFrom } from "./utils";
 			row.addChild(cell);
 			cell.layout.x.sizing = 64;
 			cell.layout.y.sizing = 64;
+			if (i === 0 && x === 0) {
+				cell.layout.y.sizing = 150;
+			}
 
 			if (i === 0 && x === 2) {
 				cell.layout.x.sizing = 'grow';
 				cell.layout.y.sizing = 'grow';
 			}
 
-			if (i === 5 && x === 3) {
+			if (i === 5 && (x === 1 || x === 3)) {
 				cell.layout.x.sizing = 'grow';
 				cell.layout.y.sizing = 'grow';
 			}

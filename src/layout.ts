@@ -93,7 +93,40 @@ function sizingGrowContainers(root: Container) {
 
 				layoutChildren.forEach((widthChild) => remainingWidth -= widthChild.layout[along].length);
 
-				child.layout[along].length += Math.max(remainingWidth, 0);
+				// child.layout[along].length += Math.max(remainingWidth, 0);
+
+				const growable = layoutChildren.filter((growChild) => growChild.layout[along].sizing === 'grow');
+
+				let maxIters = 1000;
+
+				while (remainingWidth > 0 && maxIters > 0) {
+					maxIters--;
+					// TODO fix
+					if (maxIters === 0) console.log("Grow sizing hit max iters!");
+					let smallest = growable[0].layout[along].length;
+					let secondSmallest = Infinity;
+					let widthToAdd = remainingWidth
+
+					growable.forEach((growChild) => {
+						if (growChild.layout[along].length < smallest) {
+							secondSmallest = smallest;
+							smallest = growChild.layout[along].length;
+						} else if (growChild.layout[along].length > smallest) {
+							secondSmallest = Math.min(secondSmallest, growChild.layout[along].length);
+							widthToAdd = secondSmallest - smallest;
+						}
+					});
+
+					widthToAdd = Math.min(widthToAdd, remainingWidth / growable.length);
+
+					growable.forEach((growChild) => {
+						if (growChild.layout[along].length == smallest) {
+							growChild.layout[along].length += widthToAdd;
+							remainingWidth -= widthToAdd;
+						}
+					});
+
+				}
 			}
 
 			if (child.layout[across].sizing === 'grow') {
