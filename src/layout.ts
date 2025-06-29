@@ -1,7 +1,7 @@
 import { Color, Container, Graphics } from "pixi.js";
 import { isNumber } from "./utils";
 
-const SCALING = 1;
+export let SCALING = 1;
 
 class Axis {
 	sizing: 'fit' | 'grow' | number = 'fit';
@@ -61,22 +61,22 @@ function traverseLayoutContainers(
 	if (postOrder) postOrder(container, depth);
 }
 
-function getRemainingAlongLength({ layout }: ContainerWithLayout, children: ContainerWithLayout[]) {
+function getRemainingAlongLength({ layout }: ContainerWithLayout, children: ContainerWithLayout[], scale: number) {
 	const { along, childSpacing } = layout;
 	let remainingLength = layout[along].length;
-	remainingLength -= layout[along].padding() * SCALING;
-	remainingLength -= childSpacing * (children.length - 1) * SCALING;
+	remainingLength -= layout[along].padding() * scale;
+	remainingLength -= childSpacing * (children.length - 1) * scale;
 	children.forEach((child) => remainingLength -= child.layout[along].length);
 	return remainingLength;
 }
 
-function fitContainers(root: Container) {
+function fitContainers(root: Container, scale: number) {
 	traverseLayoutContainers(root, ({ layout, parent }) => {
 		// Reset all calcualted sizes and set fixed sizes.
 		const { x, y } = layout;
 		if (!hasLayoutMixin(parent)) return;
-		x.length = (isNumber(x.sizing) ? x.sizing : x.minimumLength) * SCALING;
-		y.length = (isNumber(y.sizing) ? y.sizing : y.minimumLength) * SCALING;
+		x.length = (isNumber(x.sizing) ? x.sizing : x.minimumLength) * scale;
+		y.length = (isNumber(y.sizing) ? y.sizing : y.minimumLength) * scale;
 
 	}, ({ layout, children }) => {
 		// Calculate the minimum size of the container to fit all its children, padding and spacing.
@@ -95,13 +95,13 @@ function fitContainers(root: Container) {
 		const totalChildSpacing = childSpacing * (layoutChildren.length - 1);
 
 		if (layout[along].sizing === 'fit' || layout[along].sizing === 'grow')
-			layout[along].length = Math.max(childSizeAlong + (totalChildSpacing + layout[along].padding()) * SCALING, layout[along].length);
+			layout[along].length = Math.max(childSizeAlong + (totalChildSpacing + layout[along].padding()) * scale, layout[along].length);
 		if (layout[across].sizing === 'fit' || layout[across].sizing === 'grow')
-			layout[across].length = Math.max(maxChildSizeAcross + layout[across].padding() * SCALING, layout[across].length);
+			layout[across].length = Math.max(maxChildSizeAcross + layout[across].padding() * scale, layout[across].length);
 	});
 }
 
-function growContainers(root: Container) {
+function growContainers(root: Container, scale: number) {
 	traverseLayoutContainers(root, (container) => {
 		const { layout, children } = container;
 		const { along, across } = layout;
@@ -110,7 +110,7 @@ function growContainers(root: Container) {
 		const growAlong = layoutChildren.filter((child) => child.layout[along].sizing === 'grow');
 		const growAcross = layoutChildren.filter((child) => child.layout[across].sizing === 'grow');
 
-		let remainingLength = getRemainingAlongLength(container, layoutChildren);
+		let remainingLength = getRemainingAlongLength(container, layoutChildren, scale);
 
 		// Evenly divide remaning length to all grow children.
 		let maxIters = 100;
@@ -146,12 +146,12 @@ function growContainers(root: Container) {
 		}
 
 		growAcross.forEach((child) => {
-			child.layout[across].length = Math.max(child.layout[across].length, layout[across].length - layout[across].padding() * SCALING);
+			child.layout[across].length = Math.max(child.layout[across].length, layout[across].length - layout[across].padding() * scale);
 		});
 	});
 }
 
-function positionContainers(root: Container) {
+function positionContainers(root: Container, scale: number) {
 	traverseLayoutContainers(root, (container) => {
 		const { layout, children } = container;
 		const { along, across, childSpacing } = layout;
@@ -161,15 +161,15 @@ function positionContainers(root: Container) {
 		const alongAlignmentMultiplier = layout[along].childAlignment === 'start' ? 0 : layout[along].childAlignment === 'center' ? 0.5 : 1;
 		const acrossAlignmentMultiplier = layout[across].childAlignment === 'start' ? 0 : layout[across].childAlignment === 'center' ? 0.5 : 1;
 
-		const remainingLength = getRemainingAlongLength(container, layoutChildren);
-		let alongOffset = layout[along].paddingStart * SCALING + remainingLength * alongAlignmentMultiplier;
+		const remainingLength = getRemainingAlongLength(container, layoutChildren, scale);
+		let alongOffset = layout[along].paddingStart * scale + remainingLength * alongAlignmentMultiplier;
 
 		layoutChildren.forEach((child) => {
 			child.position[along] = alongOffset;
-			alongOffset += child.layout[along].length + childSpacing * SCALING;
+			alongOffset += child.layout[along].length + childSpacing * scale;
 
-			const remainingAcross = layout[across].length - (child.layout[across].length + layout[across].padding() * SCALING);
-			child.position[across] = layout[across].paddingStart * SCALING + remainingAcross * acrossAlignmentMultiplier;
+			const remainingAcross = layout[across].length - (child.layout[across].length + layout[across].padding() * scale);
+			child.position[across] = layout[across].paddingStart * scale + remainingAcross * acrossAlignmentMultiplier;
 		});
 	});
 }
@@ -188,10 +188,13 @@ function drawDebug(root: Container, graphics: Graphics) {
 	});
 }
 
-export function layout(root: Container, debugGraphics?: Graphics) {
-	fitContainers(root);
-	growContainers(root);
-	positionContainers(root);
+export function layout(root: Container, scale: number = 1, debugGraphics?: Graphics) {
+	fitContainers(root, scale);
+	growContainers(root, scale);
+	positionContainers(root, scale);
 
-	if (debugGraphics) drawDebug(root, debugGraphics);
+	if (debugGraphics) {
+		debugGraphics.clear();
+		drawDebug(root, debugGraphics);
+	}
 }

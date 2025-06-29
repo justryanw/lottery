@@ -94,13 +94,20 @@ import { arrayFrom } from "./utils";
 
 	debugGraphics.alpha = 1;
 
+	let scale = 1;
+
 	const onResize = () => {
-		debugGraphics.clear();
 		container.layout.x.sizing = container.layout.x.length = app.renderer.width;
 		container.layout.y.sizing = container.layout.y.length = app.renderer.height;
-		layout(container, debugGraphics)
+		layout(container, scale, debugGraphics)
 	};
 
 	app.renderer.on('resize', onResize);
 	onResize();
+
+	app.ticker.add(({ lastTime }) => {
+		const sin = Math.sin(lastTime / 500);
+		scale = sin / 1.3 + 1.2;
+		layout(container, scale, debugGraphics)
+	});
 })();
