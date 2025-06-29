@@ -65,7 +65,6 @@ function sizingFitContainers(root: Container) {
 		const layoutChildren = children.filter(hasLayoutMixin);
 
 		layoutChildren.forEach((child) => {
-			if (!hasLayoutMixin(child)) return;
 			childSizeAlong += child.layout[along].length;
 			maxChildSizeAcross = Math.max(maxChildSizeAcross, child.layout[across].length);
 		});
@@ -73,43 +72,11 @@ function sizingFitContainers(root: Container) {
 		const childSpacing = spacing * (layoutChildren.length - 1);
 
 		if (layout[along].sizing === 'fit' || layout[along].sizing === 'grow') layout[along].length = childSizeAlong + childSpacing + padding * 2;
-		if (layout[across].sizing === 'fit' || layout[along].sizing === 'grow') layout[across].length = maxChildSizeAcross + padding * 2;
+		if (layout[across].sizing === 'fit' || layout[across].sizing === 'grow') layout[across].length = maxChildSizeAcross + padding * 2;
 	});
 }
 
 function sizingGrowContainers(root: Container) {
-	// if (!hasLayoutMixin(container)) return;
-	// const { padding, spacing, along, across } = container.layout;
-
-	// let layoutChildrenCount = 0;
-	// container.children.forEach((countChild) => {
-	// 	if (!hasLayoutMixin(countChild)) return;
-	// 	layoutChildrenCount++;
-	// });
-
-	// container.children.forEach((child) => {
-	// 	if (!hasLayoutMixin(child)) return;
-
-	// 	if (child.layout[along].sizing === 'grow') {
-	// 		let remainingWidth = container.layout[along].length;
-	// 		remainingWidth -= container.layout.padding * 2;
-	// 		remainingWidth -= (layoutChildrenCount - 1) * spacing;
-
-	// 		container.children.forEach((widthChild) => {
-	// 			if (!hasLayoutMixin(widthChild)) return;
-	// 			remainingWidth -= widthChild.layout[along].length;
-	// 		});
-
-	// 		child.layout[along].length = remainingWidth;
-	// 	}
-
-	// 	if (child.layout[across].sizing === 'grow') {
-	// 		child.layout[across].length = container.layout[across].length - padding * 2;
-	// 	}
-
-	// 	sizingGrowContainers(child);
-	// });
-
 	traverseLayoutContainers(root, ({ layout, children }) => {
 		const { along, across, padding, spacing } = layout;
 
@@ -120,13 +87,14 @@ function sizingGrowContainers(root: Container) {
 				let remainingWidth = layout[along].length;
 				remainingWidth -= padding * 2;
 				remainingWidth -= spacing * (layoutChildren.length - 1);
-				layoutChildren.forEach((widthChild) => remainingWidth -= widthChild.layout[along].length)
 
-				child.layout[along].length = Math.max(child.layout[along].length, remainingWidth);
+				layoutChildren.forEach((widthChild) => remainingWidth -= widthChild.layout[along].length);
+
+				child.layout[along].length += Math.max(remainingWidth, 0);
 			}
 
 			if (child.layout[across].sizing === 'grow') {
-				child.layout[across].length = layout[across].length - padding * 2;
+				child.layout[across].length = Math.max(child.layout[across].length, layout[across].length - padding * 2);
 			}
 		});
 	});
@@ -138,9 +106,7 @@ function positionContainers(root: Container) {
 
 		let alongOffset = padding;
 
-		children.forEach((child) => {
-			if (!hasLayoutMixin(child)) return;
-
+		children.filter(hasLayoutMixin).forEach((child) => {
 			child.position[along] = alongOffset;
 			alongOffset += child.layout[along].length + spacing;
 
