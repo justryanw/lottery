@@ -1,6 +1,8 @@
 import { Color, Container, Graphics } from "pixi.js";
 import { isNumber } from "./utils";
 
+const SCALING = 1;
+
 class Axis {
 	sizing: 'fit' | 'grow' | number = 'fit';
 	length: number = 0;
@@ -49,11 +51,12 @@ function traverseLayoutContainers(
 }
 
 function sizingFitContainers(root: Container) {
-	traverseLayoutContainers(root, ({ layout }) => {
+	traverseLayoutContainers(root, ({ layout, parent }) => {
 		// Reset all calcualted sizes and set fixed sizes
 		const { x, y } = layout;
-		x.length = isNumber(x.sizing) ? x.sizing : 0;
-		y.length = isNumber(y.sizing) ? y.sizing : 0;
+		if (!hasLayoutMixin(parent)) return;
+		x.length = isNumber(x.sizing) ? x.sizing * SCALING : 0;
+		y.length = isNumber(y.sizing) ? y.sizing * SCALING : 0;
 
 	}, ({ layout, children }) => {
 		// Calculate the minimum size of the container to fit all its children, padding and spacing
@@ -71,8 +74,8 @@ function sizingFitContainers(root: Container) {
 
 		const childSpacing = spacing * (layoutChildren.length - 1);
 
-		if (layout[along].sizing === 'fit' || layout[along].sizing === 'grow') layout[along].length = childSizeAlong + childSpacing + padding * 2;
-		if (layout[across].sizing === 'fit' || layout[across].sizing === 'grow') layout[across].length = maxChildSizeAcross + padding * 2;
+		if (layout[along].sizing === 'fit' || layout[along].sizing === 'grow') layout[along].length = childSizeAlong + (childSpacing + padding * 2) * SCALING;
+		if (layout[across].sizing === 'fit' || layout[across].sizing === 'grow') layout[across].length = maxChildSizeAcross + padding * 2 * SCALING;
 	});
 }
 
@@ -85,8 +88,8 @@ function sizingGrowContainers(root: Container) {
 		layoutChildren.forEach((child) => {
 			if (child.layout[along].sizing === 'grow') {
 				let remainingWidth = layout[along].length;
-				remainingWidth -= padding * 2;
-				remainingWidth -= spacing * (layoutChildren.length - 1);
+				remainingWidth -= padding * 2 * SCALING;
+				remainingWidth -= spacing * (layoutChildren.length - 1) * SCALING;
 
 				layoutChildren.forEach((widthChild) => remainingWidth -= widthChild.layout[along].length);
 
@@ -94,7 +97,7 @@ function sizingGrowContainers(root: Container) {
 			}
 
 			if (child.layout[across].sizing === 'grow') {
-				child.layout[across].length = Math.max(child.layout[across].length, layout[across].length - padding * 2);
+				child.layout[across].length = Math.max(child.layout[across].length, layout[across].length - padding * 2 * SCALING);
 			}
 		});
 	});
@@ -104,13 +107,13 @@ function positionContainers(root: Container) {
 	traverseLayoutContainers(root, ({ layout, children }) => {
 		const { along, across, padding, spacing } = layout;
 
-		let alongOffset = padding;
+		let alongOffset = padding * SCALING;
 
 		children.filter(hasLayoutMixin).forEach((child) => {
 			child.position[along] = alongOffset;
-			alongOffset += child.layout[along].length + spacing;
+			alongOffset += child.layout[along].length + spacing * SCALING;
 
-			child.position[across] = padding;
+			child.position[across] = padding * SCALING;
 		});
 	});
 }
@@ -125,7 +128,7 @@ function drawDebug(root: Container, graphics: Graphics) {
 		graphics
 			.rect(x, y, container.layout.x.length, container.layout.y.length)
 			.fill({ color, alpha: 1 })
-			.stroke({ width: 3, alignment: 1, color: strokeColor });
+			.stroke({ width: 3 * SCALING, alignment: 1, color: strokeColor });
 	});
 }
 
