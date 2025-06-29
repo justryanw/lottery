@@ -70,13 +70,13 @@ function getRemainingAlongLength({ layout }: ContainerWithLayout, children: Cont
 	return remainingLength;
 }
 
-function sizingFitContainers(root: Container) {
+function fitContainers(root: Container) {
 	traverseLayoutContainers(root, ({ layout, parent }) => {
 		// Reset all calcualted sizes and set fixed sizes.
 		const { x, y } = layout;
 		if (!hasLayoutMixin(parent)) return;
-		x.length = isNumber(x.sizing) ? x.sizing * SCALING : x.minimumLength;
-		y.length = isNumber(y.sizing) ? y.sizing * SCALING : y.minimumLength;
+		x.length = (isNumber(x.sizing) ? x.sizing : x.minimumLength) * SCALING;
+		y.length = (isNumber(y.sizing) ? y.sizing : y.minimumLength) * SCALING;
 
 	}, ({ layout, children }) => {
 		// Calculate the minimum size of the container to fit all its children, padding and spacing.
@@ -101,7 +101,7 @@ function sizingFitContainers(root: Container) {
 	});
 }
 
-function sizingGrowContainers(root: Container) {
+function growContainers(root: Container) {
 	traverseLayoutContainers(root, (container) => {
 		const { layout, children } = container;
 		const { along, across } = layout;
@@ -151,7 +151,7 @@ function sizingGrowContainers(root: Container) {
 	});
 }
 
-function positionAndAlignContainers(root: Container) {
+function positionContainers(root: Container) {
 	traverseLayoutContainers(root, (container) => {
 		const { layout, children } = container;
 		const { along, across, childSpacing } = layout;
@@ -189,9 +189,9 @@ function drawDebug(root: Container, graphics: Graphics) {
 }
 
 export function layout(root: Container, debugGraphics?: Graphics) {
-	sizingFitContainers(root);
-	sizingGrowContainers(root);
-	positionAndAlignContainers(root);
+	fitContainers(root);
+	growContainers(root);
+	positionContainers(root);
 
 	if (debugGraphics) drawDebug(root, debugGraphics);
 }
