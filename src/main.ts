@@ -14,8 +14,8 @@ import { arrayFrom } from "./utils";
 	app.stage.addChild(debugGraphics);
 	const container = new LayoutContainer();
 	app.stage.addChild(container);
-	container.layout.padding = 40;
-	container.layout.spacing = 40;
+	container.layout.setPadding(40);
+	container.layout.childSpacing = 40;
 	container.layout.x.childAlignment = 'center';
 	container.layout.layoutDirection = 'y';
 
@@ -24,7 +24,7 @@ import { arrayFrom } from "./utils";
 		const row = new LayoutContainer();
 		container.addChild(row);
 		row.layout.layoutDirection = 'x';
-		row.layout.spacing = 10;
+		row.layout.childSpacing = 10;
 		row.layout.x.childAlignment = 'center';
 		row.layout.y.childAlignment = 'center';
 
@@ -61,13 +61,15 @@ import { arrayFrom } from "./utils";
 				cell.layout.y.minimumLength = 64;
 
 				cell.layout.layoutDirection = 'x';
-				cell.layout.padding = 10;
-				cell.layout.spacing = 10;
+				cell.layout.x.setPadding(10);
+				cell.layout.y.paddingEnd = 20;
+				cell.layout.childSpacing = 10;
+
 				arrayFrom(2, () => {
 					const quadcol = new LayoutContainer();
 					quadcol.layout.x.sizing = 'grow';
 					quadcol.layout.y.sizing = 'grow';
-					quadcol.layout.spacing = 10;
+					quadcol.layout.childSpacing = 10;
 					cell.addChild(quadcol);
 
 					arrayFrom(2, () => {

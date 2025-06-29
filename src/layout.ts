@@ -5,20 +5,29 @@ const SCALING = 1;
 
 class Axis {
 	sizing: 'fit' | 'grow' | number = 'fit';
-	minimumLength: number = 0;
 	childAlignment: 'start' | 'center' | 'end' = 'start';
-	length: number = 0;
+	paddingStart = 0;
+	paddingEnd = 0;
+	minimumLength = 0;
+	length = 0;
+
+	padding() { return this.paddingStart + this.paddingEnd; }
+	setPadding(padding: number) { this.paddingStart = this.paddingEnd = padding; }
 }
 
 class Layout {
 	layoutDirection: 'x' | 'y' = 'y';
-	padding: number = 0;
-	spacing: number = 0;
-	x: Axis = new Axis();
-	y: Axis = new Axis();
+	childSpacing = 0;
+	x = new Axis();
+	y = new Axis();
 
 	get along() { return this.layoutDirection }
 	get across() { return this.layoutDirection === 'x' ? 'y' : 'x' }
+
+	setPadding(padding: number) {
+		this.x.setPadding(padding);
+		this.y.setPadding(padding);
+	}
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -53,10 +62,10 @@ function traverseLayoutContainers(
 }
 
 function getRemainingAlongLength({ layout }: ContainerWithLayout, children: ContainerWithLayout[]) {
-	const { along, padding, spacing } = layout;
+	const { along, childSpacing } = layout;
 	let remainingLength = layout[along].length;
-	remainingLength -= padding * 2 * SCALING;
-	remainingLength -= spacing * (children.length - 1) * SCALING;
+	remainingLength -= layout[along].padding() * SCALING;
+	remainingLength -= childSpacing * (children.length - 1) * SCALING;
 	children.forEach((child) => remainingLength -= child.layout[along].length);
 	return remainingLength;
 }
@@ -71,7 +80,7 @@ function sizingFitContainers(root: Container) {
 
 	}, ({ layout, children }) => {
 		// Calculate the minimum size of the container to fit all its children, padding and spacing.
-		const { along, across, spacing, padding } = layout;
+		const { along, across, childSpacing } = layout;
 
 		let childSizeAlong = 0;
 		let maxChildSizeAcross = 0;
@@ -83,17 +92,19 @@ function sizingFitContainers(root: Container) {
 			maxChildSizeAcross = Math.max(maxChildSizeAcross, child.layout[across].length);
 		});
 
-		const childSpacing = spacing * (layoutChildren.length - 1);
+		const totalChildSpacing = childSpacing * (layoutChildren.length - 1);
 
-		if (layout[along].sizing === 'fit' || layout[along].sizing === 'grow') layout[along].length = Math.max(childSizeAlong + (childSpacing + padding * 2) * SCALING, layout[along].length);
-		if (layout[across].sizing === 'fit' || layout[across].sizing === 'grow') layout[across].length = Math.max(maxChildSizeAcross + padding * 2 * SCALING, layout[across].length);
+		if (layout[along].sizing === 'fit' || layout[along].sizing === 'grow')
+			layout[along].length = Math.max(childSizeAlong + (totalChildSpacing + layout[along].padding()) * SCALING, layout[along].length);
+		if (layout[across].sizing === 'fit' || layout[across].sizing === 'grow')
+			layout[across].length = Math.max(maxChildSizeAcross + layout[across].padding() * SCALING, layout[across].length);
 	});
 }
 
 function sizingGrowContainers(root: Container) {
 	traverseLayoutContainers(root, (container) => {
 		const { layout, children } = container;
-		const { along, across, padding } = layout;
+		const { along, across } = layout;
 
 		const layoutChildren = children.filter(hasLayoutMixin);
 		const growAlong = layoutChildren.filter((child) => child.layout[along].sizing === 'grow');
@@ -135,7 +146,7 @@ function sizingGrowContainers(root: Container) {
 		}
 
 		growAcross.forEach((child) => {
-			child.layout[across].length = Math.max(child.layout[across].length, layout[across].length - padding * 2 * SCALING);
+			child.layout[across].length = Math.max(child.layout[across].length, layout[across].length - layout[across].padding() * SCALING);
 		});
 	});
 }
@@ -143,7 +154,7 @@ function sizingGrowContainers(root: Container) {
 function positionAndAlignContainers(root: Container) {
 	traverseLayoutContainers(root, (container) => {
 		const { layout, children } = container;
-		const { along, across, padding, spacing } = layout;
+		const { along, across, childSpacing } = layout;
 
 		const layoutChildren = children.filter(hasLayoutMixin);
 
@@ -151,14 +162,14 @@ function positionAndAlignContainers(root: Container) {
 		const acrossAlignmentMultiplier = layout[across].childAlignment === 'start' ? 0 : layout[across].childAlignment === 'center' ? 0.5 : 1;
 
 		const remainingLength = getRemainingAlongLength(container, layoutChildren);
-		let alongOffset = padding * SCALING + remainingLength * alongAlignmentMultiplier;
+		let alongOffset = layout[along].paddingStart * SCALING + remainingLength * alongAlignmentMultiplier;
 
 		layoutChildren.forEach((child) => {
 			child.position[along] = alongOffset;
-			alongOffset += child.layout[along].length + spacing * SCALING;
+			alongOffset += child.layout[along].length + childSpacing * SCALING;
 
-			const remainingAcross = layout[across].length - (child.layout[across].length + padding * SCALING * 2);
-			child.position[across] = padding * SCALING + remainingAcross * acrossAlignmentMultiplier;
+			const remainingAcross = layout[across].length - (child.layout[across].length + layout[across].padding() * SCALING);
+			child.position[across] = layout[across].paddingStart * SCALING + remainingAcross * acrossAlignmentMultiplier;
 		});
 	});
 }
