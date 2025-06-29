@@ -20,17 +20,17 @@ import { arrayFrom } from "./utils";
 	container.layout.layoutDirection = 'y';
 
 
-	arrayFrom(7, (i) => {
+	arrayFrom(5, (i) => {
 		const row = new LayoutContainer();
 		container.addChild(row);
 		row.layout.layoutDirection = 'x';
 		row.layout.spacing = 10;
 
-		if (i === 0) {
+		if (i === 0 || i === 1) {
 			row.layout.x.sizing = 'grow';
 			row.layout.y.sizing = 'grow';
 		}
-		if (i === 5) {
+		if (i === 3) {
 			row.layout.x.sizing = 'grow';
 			row.layout.y.sizing = 'grow';
 		}
@@ -46,12 +46,16 @@ import { arrayFrom } from "./utils";
 				cell.layout.y.sizing = 150;
 			}
 
+			if (i === 1 && x === 0) {
+				cell.layout.y.sizing = 110;
+			}
+
 			if (i === 0 && x === 2) {
 				cell.layout.x.sizing = 'grow';
 				cell.layout.y.sizing = 'grow';
 			}
 
-			if (i === 5 && (x === 1 || x === 3)) {
+			if (i === 3 && (x === 1 || x === 3)) {
 				cell.layout.x.sizing = 'grow';
 				cell.layout.y.sizing = 'grow';
 			}

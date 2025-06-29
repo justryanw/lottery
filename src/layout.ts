@@ -52,14 +52,14 @@ function traverseLayoutContainers(
 
 function sizingFitContainers(root: Container) {
 	traverseLayoutContainers(root, ({ layout, parent }) => {
-		// Reset all calcualted sizes and set fixed sizes
+		// Reset all calcualted sizes and set fixed sizes.
 		const { x, y } = layout;
 		if (!hasLayoutMixin(parent)) return;
 		x.length = isNumber(x.sizing) ? x.sizing * SCALING : 0;
 		y.length = isNumber(y.sizing) ? y.sizing * SCALING : 0;
 
 	}, ({ layout, children }) => {
-		// Calculate the minimum size of the container to fit all its children, padding and spacing
+		// Calculate the minimum size of the container to fit all its children, padding and spacing.
 		const { along, across, spacing, padding } = layout;
 
 		let childSizeAlong = 0;
@@ -87,37 +87,41 @@ function sizingGrowContainers(root: Container) {
 		const growAlong = layoutChildren.filter((child) => child.layout[along].sizing === 'grow');
 		const growAcross = layoutChildren.filter((child) => child.layout[across].sizing === 'grow');
 
-		let remainingWidth = layout[along].length;
-		remainingWidth -= padding * 2 * SCALING;
-		remainingWidth -= spacing * (layoutChildren.length - 1) * SCALING;
+		// Get remaning length in parent after the children
+		let remainingLength = layout[along].length;
+		remainingLength -= padding * 2 * SCALING;
+		remainingLength -= spacing * (layoutChildren.length - 1) * SCALING;
+		layoutChildren.forEach((child) => remainingLength -= child.layout[along].length);
 
-		layoutChildren.forEach((child) => remainingWidth -= child.layout[along].length);
-
+		// Evenly divide remaning length to all grow children.
 		let maxIters = 100;
-
-		while (growAlong.length > 0 && remainingWidth > 0.01 && maxIters > 0) {
+		while (growAlong.length > 0 && remainingLength > 0.1 && maxIters > 0) {
 			maxIters--;
 			if (maxIters === 0) console.log("Grow sizing hit max iters!");
-			let smallest = growAlong[0].layout[along].length;
-			let secondSmallest = Infinity;
-			let widthToAdd = remainingWidth
 
-			growAlong.forEach((growChild) => {
-				if (growChild.layout[along].length < smallest) {
-					secondSmallest = smallest;
-					smallest = growChild.layout[along].length;
-				} else if (growChild.layout[along].length > smallest) {
-					secondSmallest = Math.min(secondSmallest, growChild.layout[along].length);
-					widthToAdd = secondSmallest - smallest;
+			let smallestLength = growAlong[0].layout[along].length;
+			let secondSmallestLength = Infinity;
+			let widthToAdd = remainingLength;
+
+			// Find smallest and second smallest child lengths.
+			// Make widthToAdd the difference between them.
+			growAlong.forEach((child) => {
+				if (child.layout[along].length < smallestLength) {
+					secondSmallestLength = smallestLength;
+					smallestLength = child.layout[along].length;
+				} else if (child.layout[along].length > smallestLength) {
+					secondSmallestLength = Math.min(secondSmallestLength, child.layout[along].length);
+					widthToAdd = secondSmallestLength - smallestLength;
 				}
 			});
 
-			widthToAdd = Math.min(widthToAdd, remainingWidth / growAlong.length);
+			widthToAdd = Math.min(widthToAdd, remainingLength / growAlong.length);
 
+			// Add the difference between the second smallest and smallest to the smallest child so that they are equal.
 			growAlong.forEach((child) => {
-				if (child.layout[along].length === smallest) {
+				if (child.layout[along].length === smallestLength) {
 					child.layout[along].length += widthToAdd;
-					remainingWidth -= widthToAdd;
+					remainingLength -= widthToAdd;
 				}
 			});
 		}
