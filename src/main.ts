@@ -1,4 +1,4 @@
-import { Application, Graphics } from "pixi.js";
+import { Application, Container, Graphics } from "pixi.js";
 import { initDevtools } from '@pixi/devtools';
 import { LayoutContainer, layout } from "./layout";
 import { arrayFrom } from "./utils";
@@ -41,6 +41,9 @@ import { arrayFrom } from "./utils";
 			if (i === 0 && x === 2) {
 				cell.layout.x.sizing = 'grow';
 				cell.layout.y.sizing = 'grow';
+
+				const nonLayout = new Container();
+				cell.addChild(nonLayout);
 			}
 
 			if (i === 5 && x === 3) {
