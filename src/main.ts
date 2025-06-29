@@ -53,11 +53,34 @@ import { arrayFrom } from "./utils";
 			if (i === 0 && x === 2) {
 				cell.layout.x.sizing = 'grow';
 				cell.layout.y.sizing = 'grow';
+				cell.layout.x.minimum = 64;
+				cell.layout.y.minimum = 64;
+
+				cell.layout.layoutDirection = 'x';
+				cell.layout.padding = 10;
+				cell.layout.spacing = 10;
+				arrayFrom(2, () => {
+					const quadcol = new LayoutContainer();
+					quadcol.layout.x.sizing = 'grow';
+					quadcol.layout.y.sizing = 'grow';
+					quadcol.layout.spacing = 10;
+					cell.addChild(quadcol);
+
+					arrayFrom(2, () => {
+						const quadrow = new LayoutContainer();
+						quadcol.addChild(quadrow);
+						quadrow.layout.x.sizing = 'grow';
+						quadrow.layout.y.sizing = 'grow';
+
+					});
+				});
 			}
 
 			if (i === 3 && (x === 1 || x === 3)) {
 				cell.layout.x.sizing = 'grow';
 				cell.layout.y.sizing = 'grow';
+				cell.layout.x.minimum = 64;
+				cell.layout.y.minimum = 64;
 			}
 
 		});

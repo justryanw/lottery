@@ -6,6 +6,7 @@ const SCALING = 1;
 class Axis {
 	sizing: 'fit' | 'grow' | number = 'fit';
 	length: number = 0;
+	minimum: number = 0;
 }
 
 class Layout {
@@ -26,12 +27,12 @@ function WithLayout<TBase extends new (...args: any[]) => any>(Base: TBase) {
 	};
 }
 
-export type ContainerWithLayout = Container & {
+type ContainerWithLayout = Container & {
 	layout: Layout;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function hasLayoutMixin(obj: any): obj is ContainerWithLayout {
+function hasLayoutMixin(obj: any): obj is ContainerWithLayout {
 	return obj && 'layout' in obj;
 }
 
@@ -55,8 +56,8 @@ function sizingFitContainers(root: Container) {
 		// Reset all calcualted sizes and set fixed sizes.
 		const { x, y } = layout;
 		if (!hasLayoutMixin(parent)) return;
-		x.length = isNumber(x.sizing) ? x.sizing * SCALING : 0;
-		y.length = isNumber(y.sizing) ? y.sizing * SCALING : 0;
+		x.length = isNumber(x.sizing) ? x.sizing * SCALING : x.minimum;
+		y.length = isNumber(y.sizing) ? y.sizing * SCALING : y.minimum;
 
 	}, ({ layout, children }) => {
 		// Calculate the minimum size of the container to fit all its children, padding and spacing.
@@ -74,8 +75,8 @@ function sizingFitContainers(root: Container) {
 
 		const childSpacing = spacing * (layoutChildren.length - 1);
 
-		if (layout[along].sizing === 'fit' || layout[along].sizing === 'grow') layout[along].length = childSizeAlong + (childSpacing + padding * 2) * SCALING;
-		if (layout[across].sizing === 'fit' || layout[across].sizing === 'grow') layout[across].length = maxChildSizeAcross + padding * 2 * SCALING;
+		if (layout[along].sizing === 'fit' || layout[along].sizing === 'grow') layout[along].length = Math.max(childSizeAlong + (childSpacing + padding * 2) * SCALING, layout[along].length);
+		if (layout[across].sizing === 'fit' || layout[across].sizing === 'grow') layout[across].length = Math.max(maxChildSizeAcross + padding * 2 * SCALING, layout[across].length);
 	});
 }
 
