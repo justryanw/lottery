@@ -1,7 +1,7 @@
 import { Color, Container, Graphics } from "pixi.js";
 import { isNumber } from "./utils";
 
-export let SCALING = 1;
+
 
 class Axis {
 	sizing: 'fit' | 'grow' | number = 'fit';
@@ -174,7 +174,7 @@ function positionContainers(root: Container, scale: number) {
 	});
 }
 
-function drawDebug(root: Container, graphics: Graphics) {
+function drawDebug(root: Container, graphics: Graphics, scale: number) {
 	traverseLayoutContainers(root, (container, depth) => {
 		const { x, y } = container.getGlobalPosition()
 
@@ -184,7 +184,7 @@ function drawDebug(root: Container, graphics: Graphics) {
 		graphics
 			.rect(x, y, container.layout.x.length, container.layout.y.length)
 			.fill({ color, alpha: 1 })
-			.stroke({ width: 3 * SCALING, alignment: 1, color: strokeColor });
+			.stroke({ width: 3 * scale, alignment: 1, color: strokeColor });
 	});
 }
 
@@ -195,6 +195,6 @@ export function layout(root: Container, scale: number = 1, debugGraphics?: Graph
 
 	if (debugGraphics) {
 		debugGraphics.clear();
-		drawDebug(root, debugGraphics);
+		drawDebug(root, debugGraphics, scale);
 	}
 }
