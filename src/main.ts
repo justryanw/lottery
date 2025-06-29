@@ -106,7 +106,7 @@ import { arrayFrom } from "./utils";
 	onResize();
 
 	app.ticker.add(({ lastTime }) => {
-		const sin = Math.sin(lastTime / 500);
+		const sin = Math.sin(lastTime / 1000);
 		scale = sin / 1.3 + 1.2;
 		layout(container, scale, debugGraphics)
 	});
