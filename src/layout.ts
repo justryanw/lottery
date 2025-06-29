@@ -84,54 +84,46 @@ function sizingGrowContainers(root: Container) {
 		const { along, across, padding, spacing } = layout;
 
 		const layoutChildren = children.filter(hasLayoutMixin);
+		const growAlong = layoutChildren.filter((child) => child.layout[along].sizing === 'grow');
+		const growAcross = layoutChildren.filter((child) => child.layout[across].sizing === 'grow');
 
-		layoutChildren.forEach((child) => {
-			if (child.layout[along].sizing === 'grow') {
-				let remainingWidth = layout[along].length;
-				remainingWidth -= padding * 2 * SCALING;
-				remainingWidth -= spacing * (layoutChildren.length - 1) * SCALING;
+		let remainingWidth = layout[along].length;
+		remainingWidth -= padding * 2 * SCALING;
+		remainingWidth -= spacing * (layoutChildren.length - 1) * SCALING;
 
-				layoutChildren.forEach((widthChild) => remainingWidth -= widthChild.layout[along].length);
+		layoutChildren.forEach((child) => remainingWidth -= child.layout[along].length);
 
-				// child.layout[along].length += Math.max(remainingWidth, 0);
+		let maxIters = 100;
 
-				const growable = layoutChildren.filter((growChild) => growChild.layout[along].sizing === 'grow');
+		while (growAlong.length > 0 && remainingWidth > 0.01 && maxIters > 0) {
+			maxIters--;
+			if (maxIters === 0) console.log("Grow sizing hit max iters!");
+			let smallest = growAlong[0].layout[along].length;
+			let secondSmallest = Infinity;
+			let widthToAdd = remainingWidth
 
-				let maxIters = 1000;
-
-				while (remainingWidth > 0 && maxIters > 0) {
-					maxIters--;
-					// TODO fix
-					if (maxIters === 0) console.log("Grow sizing hit max iters!");
-					let smallest = growable[0].layout[along].length;
-					let secondSmallest = Infinity;
-					let widthToAdd = remainingWidth
-
-					growable.forEach((growChild) => {
-						if (growChild.layout[along].length < smallest) {
-							secondSmallest = smallest;
-							smallest = growChild.layout[along].length;
-						} else if (growChild.layout[along].length > smallest) {
-							secondSmallest = Math.min(secondSmallest, growChild.layout[along].length);
-							widthToAdd = secondSmallest - smallest;
-						}
-					});
-
-					widthToAdd = Math.min(widthToAdd, remainingWidth / growable.length);
-
-					growable.forEach((growChild) => {
-						if (growChild.layout[along].length == smallest) {
-							growChild.layout[along].length += widthToAdd;
-							remainingWidth -= widthToAdd;
-						}
-					});
-
+			growAlong.forEach((growChild) => {
+				if (growChild.layout[along].length < smallest) {
+					secondSmallest = smallest;
+					smallest = growChild.layout[along].length;
+				} else if (growChild.layout[along].length > smallest) {
+					secondSmallest = Math.min(secondSmallest, growChild.layout[along].length);
+					widthToAdd = secondSmallest - smallest;
 				}
-			}
+			});
 
-			if (child.layout[across].sizing === 'grow') {
-				child.layout[across].length = Math.max(child.layout[across].length, layout[across].length - padding * 2 * SCALING);
-			}
+			widthToAdd = Math.min(widthToAdd, remainingWidth / growAlong.length);
+
+			growAlong.forEach((child) => {
+				if (child.layout[along].length === smallest) {
+					child.layout[along].length += widthToAdd;
+					remainingWidth -= widthToAdd;
+				}
+			});
+		}
+
+		growAcross.forEach((child) => {
+			child.layout[across].length = Math.max(child.layout[across].length, layout[across].length - padding * 2 * SCALING);
 		});
 	});
 }
