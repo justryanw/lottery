@@ -1,6 +1,6 @@
 import { Application, Graphics } from "pixi.js";
 import { initDevtools } from '@pixi/devtools';
-import { LayoutContainer, layout } from "./layout";
+import { LayoutContainer, LayoutText, layout } from "./layout";
 import { arrayFrom } from "./utils";
 
 (async () => {
@@ -12,102 +12,81 @@ import { arrayFrom } from "./utils";
 
 	const debugGraphics = new Graphics();
 	app.stage.addChild(debugGraphics);
-	const container = new LayoutContainer();
-	app.stage.addChild(container);
-	container.layout.setPadding(40);
-	container.layout.childSpacing = 40;
-	container.layout.x.childAlignment = 'center';
-	container.layout.layoutDirection = 'y';
+
+	const root = new LayoutContainer();
+	app.stage.addChild(root);
+
+	const caller = new LayoutContainer();
+	root.addChild(caller);
+	caller.layout.y.sizing = 100;
+	caller.layout.x.sizing = 'grow';
+	caller.layout.y.childAlignment = 'center';
+	caller.layout.x.childAlignment = 'center';
+
+	const calls = new LayoutContainer();
+	caller.addChild(calls);
+	calls.layout.y.sizing = 50;
+	calls.layout.x.sizing = 300;
 
 
-	arrayFrom(4, (i) => {
+	const numberGrid = new LayoutContainer();
+	root.addChild(numberGrid);
+	numberGrid.layout.y.sizing = 'grow';
+	numberGrid.layout.x.sizing = 'grow';
+	numberGrid.layout.x.childAlignment = 'center';
+	numberGrid.layout.y.childAlignment = 'center';
+	numberGrid.layout.childSpacing = 10;
+	numberGrid.layout.setPadding(10);
+
+	arrayFrom(10, (rowIndex) => {
 		const row = new LayoutContainer();
-		container.addChild(row);
+		numberGrid.addChild(row);
 		row.layout.layoutDirection = 'x';
 		row.layout.childSpacing = 10;
-		row.layout.x.childAlignment = 'center';
-		row.layout.y.childAlignment = 'center';
 
-		if (i === 0 || i === 1) {
-			row.layout.x.sizing = 'grow';
-			row.layout.y.sizing = 'grow';
-		}
-		if (i === 3) {
-			row.layout.x.sizing = 'grow';
-			row.layout.y.sizing = 'grow';
-		}
-
-		const cells = i === 0 ? 4 : 5;
-
-		arrayFrom(cells, (x) => {
+		arrayFrom(rowIndex === 9 ? 5 : 6, (columnIndex) => {
 			const cell = new LayoutContainer();
 			row.addChild(cell);
-			cell.layout.x.sizing = 64;
-			cell.layout.y.sizing = 64;
+			cell.layout.y.sizing = 40;
+			cell.layout.x.sizing = 40;
 			cell.layout.x.childAlignment = 'center';
 			cell.layout.y.childAlignment = 'center';
-			if (i === 0 && x === 0) {
-				cell.layout.y.sizing = 150;
-			}
+			cell.layout.drawDebug = true;
 
-			if (i === 1 && x === 0) {
-				cell.layout.y.sizing = 110;
-			}
-
-			if (i === 0 && x === 2) {
-				cell.layout.x.sizing = 'grow';
-				cell.layout.y.sizing = 'grow';
-				cell.layout.x.minimumLength = 138;
-				cell.layout.y.minimumLength = 64;
-
-				cell.layout.layoutDirection = 'x';
-				cell.layout.x.setPadding(10);
-				cell.layout.y.paddingEnd = 20;
-				cell.layout.childSpacing = 10;
-
-				arrayFrom(2, () => {
-					const quadcol = new LayoutContainer();
-					quadcol.layout.x.sizing = 'grow';
-					quadcol.layout.y.sizing = 'grow';
-					quadcol.layout.childSpacing = 10;
-					cell.addChild(quadcol);
-
-					arrayFrom(2, () => {
-						const quadrow = new LayoutContainer();
-						quadcol.addChild(quadrow);
-						quadrow.layout.x.sizing = 'grow';
-						quadrow.layout.y.sizing = 'grow';
-
-					});
-				});
-			}
-
-			if (i === 3 && (x === 1 || x === 3)) {
-				cell.layout.x.sizing = 'grow';
-				cell.layout.y.sizing = 'grow';
-				cell.layout.x.minimumLength = 64;
-				cell.layout.y.minimumLength = 64;
-			}
-
+			const text = new LayoutText({ text: `${rowIndex * 6 + columnIndex + 1}` })
+			cell.addChild(text);
+			text.style.fontSize = 18;
+			text.layout.x.sizing = text.width;
+			text.layout.y.sizing = text.height;
+			// text.layout.drawDebug = true;
 		});
-	})
+	});
 
-	debugGraphics.alpha = 1;
+	// const num = new LayoutContainer();
 
-	let scale = 1;
+	const menu = new LayoutContainer();
+	root.addChild(menu);
+	menu.layout.y.sizing = 100;
+	menu.layout.x.sizing = 'grow';
 
 	const onResize = () => {
-		container.layout.x.sizing = container.layout.x.length = app.renderer.width;
-		container.layout.y.sizing = container.layout.y.length = app.renderer.height;
-		layout(container, scale, debugGraphics)
+		const { width, height } = app.renderer;
+		const { x, y } = root.layout;
+
+		x.sizing = x.length = width;
+		y.sizing = y.length = height;
+
+		const minWidth = 330;
+		const minHeight = 740;
+
+		const widthScale = Math.min(width / minWidth, 10);
+		const heightScale = Math.min(height / minHeight, 10);
+
+		const scale = Math.min(widthScale, heightScale);
+
+		layout(root, scale, debugGraphics);
 	};
 
 	app.renderer.on('resize', onResize);
 	onResize();
-
-	app.ticker.add(({ lastTime }) => {
-		const sin = Math.sin(lastTime / 1000);
-		scale = sin / 1.3 + 1.2;
-		layout(container, scale, debugGraphics)
-	});
 })();

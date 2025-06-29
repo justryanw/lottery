@@ -1,7 +1,5 @@
-import { Color, Container, Graphics } from "pixi.js";
+import { Color, Container, Graphics, Text } from "pixi.js";
 import { isNumber } from "./utils";
-
-
 
 class Axis {
 	sizing: 'fit' | 'grow' | number = 'fit';
@@ -20,6 +18,7 @@ class Layout {
 	childSpacing = 0;
 	x = new Axis();
 	y = new Axis();
+	drawDebug = false;
 
 	get along() { return this.layoutDirection }
 	get across() { return this.layoutDirection === 'x' ? 'y' : 'x' }
@@ -47,7 +46,7 @@ function hasLayoutMixin(obj: any): obj is ContainerWithLayout {
 }
 
 export const LayoutContainer = WithLayout(Container);
-// export const LayoutSprite = WithLayout(Sprite);
+export const LayoutText = WithLayout(Text);
 
 function traverseLayoutContainers(
 	container: Container,
@@ -176,6 +175,7 @@ function positionContainers(root: Container, scale: number) {
 
 function drawDebug(root: Container, graphics: Graphics, scale: number) {
 	traverseLayoutContainers(root, (container, depth) => {
+		if (!container.layout.drawDebug) return;
 		const { x, y } = container.getGlobalPosition()
 
 		const color = new Color().setValue({ h: 40 * depth, s: 60, v: 100 });
