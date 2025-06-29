@@ -5,8 +5,9 @@ const SCALING = 1;
 
 class Axis {
 	sizing: 'fit' | 'grow' | number = 'fit';
+	minimumLength: number = 0;
+	childAlignment: 'start' | 'center' | 'end' = 'start';
 	length: number = 0;
-	minimum: number = 0;
 }
 
 class Layout {
@@ -51,13 +52,22 @@ function traverseLayoutContainers(
 	if (postOrder) postOrder(container, depth);
 }
 
+function getRemainingAlongLength({ layout }: ContainerWithLayout, children: ContainerWithLayout[]) {
+	const { along, padding, spacing } = layout;
+	let remainingLength = layout[along].length;
+	remainingLength -= padding * 2 * SCALING;
+	remainingLength -= spacing * (children.length - 1) * SCALING;
+	children.forEach((child) => remainingLength -= child.layout[along].length);
+	return remainingLength;
+}
+
 function sizingFitContainers(root: Container) {
 	traverseLayoutContainers(root, ({ layout, parent }) => {
 		// Reset all calcualted sizes and set fixed sizes.
 		const { x, y } = layout;
 		if (!hasLayoutMixin(parent)) return;
-		x.length = isNumber(x.sizing) ? x.sizing * SCALING : x.minimum;
-		y.length = isNumber(y.sizing) ? y.sizing * SCALING : y.minimum;
+		x.length = isNumber(x.sizing) ? x.sizing * SCALING : x.minimumLength;
+		y.length = isNumber(y.sizing) ? y.sizing * SCALING : y.minimumLength;
 
 	}, ({ layout, children }) => {
 		// Calculate the minimum size of the container to fit all its children, padding and spacing.
@@ -81,18 +91,15 @@ function sizingFitContainers(root: Container) {
 }
 
 function sizingGrowContainers(root: Container) {
-	traverseLayoutContainers(root, ({ layout, children }) => {
-		const { along, across, padding, spacing } = layout;
+	traverseLayoutContainers(root, (container) => {
+		const { layout, children } = container;
+		const { along, across, padding } = layout;
 
 		const layoutChildren = children.filter(hasLayoutMixin);
 		const growAlong = layoutChildren.filter((child) => child.layout[along].sizing === 'grow');
 		const growAcross = layoutChildren.filter((child) => child.layout[across].sizing === 'grow');
 
-		// Get remaning length in parent after the children
-		let remainingLength = layout[along].length;
-		remainingLength -= padding * 2 * SCALING;
-		remainingLength -= spacing * (layoutChildren.length - 1) * SCALING;
-		layoutChildren.forEach((child) => remainingLength -= child.layout[along].length);
+		let remainingLength = getRemainingAlongLength(container, layoutChildren);
 
 		// Evenly divide remaning length to all grow children.
 		let maxIters = 100;
@@ -133,17 +140,25 @@ function sizingGrowContainers(root: Container) {
 	});
 }
 
-function positionContainers(root: Container) {
-	traverseLayoutContainers(root, ({ layout, children }) => {
+function positionAndAlignContainers(root: Container) {
+	traverseLayoutContainers(root, (container) => {
+		const { layout, children } = container;
 		const { along, across, padding, spacing } = layout;
 
-		let alongOffset = padding * SCALING;
+		const layoutChildren = children.filter(hasLayoutMixin);
 
-		children.filter(hasLayoutMixin).forEach((child) => {
+		const alongAlignmentMultiplier = layout[along].childAlignment === 'start' ? 0 : layout[along].childAlignment === 'center' ? 0.5 : 1;
+		const acrossAlignmentMultiplier = layout[across].childAlignment === 'start' ? 0 : layout[across].childAlignment === 'center' ? 0.5 : 1;
+
+		const remainingLength = getRemainingAlongLength(container, layoutChildren);
+		let alongOffset = padding * SCALING + remainingLength * alongAlignmentMultiplier;
+
+		layoutChildren.forEach((child) => {
 			child.position[along] = alongOffset;
 			alongOffset += child.layout[along].length + spacing * SCALING;
 
-			child.position[across] = padding * SCALING;
+			const remainingAcross = layout[across].length - (child.layout[across].length + padding * SCALING * 2);
+			child.position[across] = padding * SCALING + remainingAcross * acrossAlignmentMultiplier;
 		});
 	});
 }
@@ -165,7 +180,7 @@ function drawDebug(root: Container, graphics: Graphics) {
 export function layout(root: Container, debugGraphics?: Graphics) {
 	sizingFitContainers(root);
 	sizingGrowContainers(root);
-	positionContainers(root);
+	positionAndAlignContainers(root);
 
 	if (debugGraphics) drawDebug(root, debugGraphics);
 }

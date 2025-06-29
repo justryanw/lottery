@@ -12,19 +12,21 @@ import { arrayFrom } from "./utils";
 
 	const debugGraphics = new Graphics();
 	app.stage.addChild(debugGraphics);
-
 	const container = new LayoutContainer();
 	app.stage.addChild(container);
-	container.layout.padding = 10;
-	container.layout.spacing = 10;
+	container.layout.padding = 40;
+	container.layout.spacing = 40;
+	container.layout.x.childAlignment = 'center';
 	container.layout.layoutDirection = 'y';
 
 
-	arrayFrom(5, (i) => {
+	arrayFrom(4, (i) => {
 		const row = new LayoutContainer();
 		container.addChild(row);
 		row.layout.layoutDirection = 'x';
 		row.layout.spacing = 10;
+		row.layout.x.childAlignment = 'center';
+		row.layout.y.childAlignment = 'center';
 
 		if (i === 0 || i === 1) {
 			row.layout.x.sizing = 'grow';
@@ -42,6 +44,8 @@ import { arrayFrom } from "./utils";
 			row.addChild(cell);
 			cell.layout.x.sizing = 64;
 			cell.layout.y.sizing = 64;
+			cell.layout.x.childAlignment = 'center';
+			cell.layout.y.childAlignment = 'center';
 			if (i === 0 && x === 0) {
 				cell.layout.y.sizing = 150;
 			}
@@ -53,8 +57,8 @@ import { arrayFrom } from "./utils";
 			if (i === 0 && x === 2) {
 				cell.layout.x.sizing = 'grow';
 				cell.layout.y.sizing = 'grow';
-				cell.layout.x.minimum = 64;
-				cell.layout.y.minimum = 64;
+				cell.layout.x.minimumLength = 138;
+				cell.layout.y.minimumLength = 64;
 
 				cell.layout.layoutDirection = 'x';
 				cell.layout.padding = 10;
@@ -79,8 +83,8 @@ import { arrayFrom } from "./utils";
 			if (i === 3 && (x === 1 || x === 3)) {
 				cell.layout.x.sizing = 'grow';
 				cell.layout.y.sizing = 'grow';
-				cell.layout.x.minimum = 64;
-				cell.layout.y.minimum = 64;
+				cell.layout.x.minimumLength = 64;
+				cell.layout.y.minimumLength = 64;
 			}
 
 		});
