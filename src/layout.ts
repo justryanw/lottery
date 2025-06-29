@@ -24,13 +24,29 @@ function WithLayout<TBase extends new (...args: any[]) => any>(Base: TBase) {
 	};
 }
 
+export type ContainerWithLayout = Container & {
+	layout: Layout;
+};
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function hasLayoutMixin(obj: any): obj is { layout: Layout; } {
-	return 'layout' in obj;
+export function hasLayoutMixin(obj: any): obj is ContainerWithLayout {
+	return obj && 'layout' in obj;
 }
 
 export const LayoutContainer = WithLayout(Container);
 // export const LayoutSprite = WithLayout(Sprite);
+
+function traverseLayoutContainers(
+	container: Container,
+	preOrder?: (container: ContainerWithLayout, depth: number) => void,
+	postOrder?: (container: ContainerWithLayout, depth: number) => void,
+	depth = 0,
+) {
+	if (!hasLayoutMixin(container)) return;
+	if (preOrder) preOrder(container, depth);
+	container.children.forEach((child) => traverseLayoutContainers(child, preOrder, postOrder, depth + 1));
+	if (postOrder) postOrder(container, depth);
+}
 
 function sizingFitContainers(container: Container) {
 	if (!hasLayoutMixin(container)) return;
@@ -118,33 +134,18 @@ function positionContainers(container: Container) {
 	});
 }
 
-function drawDebug(container: Container, graphics: Graphics, depth = 0) {
-	if (!hasLayoutMixin(container)) return;
+function drawDebug(root: Container, graphics: Graphics) {
+	traverseLayoutContainers(root, (container, depth) => {
+		const { x, y } = container.getGlobalPosition()
 
-	const { x, y } = container.getGlobalPosition()
+		const color = new Color().setValue({ h: 40 * depth, s: 60, v: 100 });
+		const strokeColor = new Color().setValue({ h: 40 * depth, s: 50, v: 50 });
 
-	const color = new Color().setValue({
-		h: 40 * depth,
-		s: 60,
-		v: 100
-	})
-
-	const strokeColor = new Color().setValue({
-		h: 40 * depth,
-		s: 50,
-		v: 50
-	})
-
-	graphics
-		.rect(x, y, container.layout.x.length, container.layout.y.length)
-		.fill({ color, alpha: 1 })
-		.stroke({ width: 3, alignment: 1, color: strokeColor });
-
-	container.children.forEach((child) => {
-		if (!hasLayoutMixin(child)) return;
-		drawDebug(child, graphics, depth + 1);
+		graphics
+			.rect(x, y, container.layout.x.length, container.layout.y.length)
+			.fill({ color, alpha: 1 })
+			.stroke({ width: 3, alignment: 1, color: strokeColor });
 	});
-
 }
 
 export function layout(container: Container, debugGraphics?: Graphics) {
