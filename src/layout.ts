@@ -19,6 +19,8 @@ class Layout {
 	x = new Axis();
 	y = new Axis();
 	drawDebug = false;
+	fontSize = 12;
+	postLayout: ((scale: number) => void) | undefined;
 
 	get along() { return this.layoutDirection }
 	get across() { return this.layoutDirection === 'x' ? 'y' : 'x' }
@@ -47,6 +49,7 @@ function hasLayoutMixin(obj: any): obj is ContainerWithLayout {
 
 export const LayoutContainer = WithLayout(Container);
 export const LayoutText = WithLayout(Text);
+export const LayoutGraphics = WithLayout(Graphics);
 
 function traverseLayoutContainers(
 	container: Container,
@@ -67,6 +70,16 @@ function getRemainingAlongLength({ layout }: ContainerWithLayout, children: Cont
 	remainingLength -= childSpacing * (children.length - 1) * scale;
 	children.forEach((child) => remainingLength -= child.layout[along].length);
 	return remainingLength;
+}
+
+function scaleText(root: Container, scale: number) {
+	traverseLayoutContainers(root, (container) => {
+		if (container instanceof Text) {
+			container.style.fontSize = container.layout.fontSize * scale;
+			container.layout.x.sizing = container.width / scale;
+			container.layout.y.sizing = container.height / scale;
+		}
+	});
 }
 
 function fitContainers(root: Container, scale: number) {
@@ -189,9 +202,11 @@ function drawDebug(root: Container, graphics: Graphics, scale: number) {
 }
 
 export function layout(root: Container, scale: number = 1, debugGraphics?: Graphics) {
+	scaleText(root, scale);
 	fitContainers(root, scale);
 	growContainers(root, scale);
 	positionContainers(root, scale);
+	traverseLayoutContainers(root, (container) => container.layout.postLayout?.(scale));
 
 	if (debugGraphics) {
 		debugGraphics.clear();

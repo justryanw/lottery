@@ -1,11 +1,16 @@
 import { Application, Graphics } from "pixi.js";
 import { initDevtools } from '@pixi/devtools';
-import { LayoutContainer, LayoutText, layout } from "./layout";
+import { LayoutContainer, layout } from "./layout";
 import { arrayFrom } from "./utils";
+import { LotteryNumber } from "./components/lotteryNumber";
 
 (async () => {
 	const app = new Application();
-	await app.init({ background: "#1099bb", resizeTo: window });
+	await app.init({
+		background: "#1099bb",
+		resizeTo: window,
+		antialias: true
+	});
 	document.getElementById("pixi-container")!.appendChild(app.canvas);
 
 	initDevtools({ app });
@@ -45,24 +50,9 @@ import { arrayFrom } from "./utils";
 		row.layout.childSpacing = 10;
 
 		arrayFrom(rowIndex === 9 ? 5 : 6, (columnIndex) => {
-			const cell = new LayoutContainer();
-			row.addChild(cell);
-			cell.layout.y.sizing = 40;
-			cell.layout.x.sizing = 40;
-			cell.layout.x.childAlignment = 'center';
-			cell.layout.y.childAlignment = 'center';
-			cell.layout.drawDebug = true;
-
-			const text = new LayoutText({ text: `${rowIndex * 6 + columnIndex + 1}` })
-			cell.addChild(text);
-			text.style.fontSize = 18;
-			text.layout.x.sizing = text.width;
-			text.layout.y.sizing = text.height;
-			// text.layout.drawDebug = true;
+			new LotteryNumber(row, rowIndex * 6 + columnIndex + 1);
 		});
 	});
-
-	// const num = new LayoutContainer();
 
 	const menu = new LayoutContainer();
 	root.addChild(menu);
