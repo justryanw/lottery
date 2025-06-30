@@ -9,7 +9,8 @@ import { LotteryNumber } from "./components/lotteryNumber";
 	await app.init({
 		background: "#1099bb",
 		resizeTo: window,
-		antialias: true
+		antialias: true,
+		autoDensity: true,
 	});
 	document.getElementById("app")!.appendChild(app.canvas);
 
