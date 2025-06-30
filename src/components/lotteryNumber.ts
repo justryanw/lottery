@@ -17,7 +17,6 @@ export class LotteryNumber extends LayoutContainer {
 
 		const text = new LayoutText({ text: index })
 		this.addChild(text);
-		text.style.trim = true;
 		text.layout.fontSize = 20;
 	}
 

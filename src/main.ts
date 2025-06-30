@@ -1,4 +1,4 @@
-import { Application, Graphics } from "pixi.js";
+import { Application, Graphics, Text } from "pixi.js";
 import { initDevtools } from '@pixi/devtools';
 import { LayoutContainer, layout } from "./layout";
 import { arrayFrom } from "./utils";
@@ -8,8 +8,8 @@ import { LotteryNumber } from "./components/lotteryNumber";
 	const app = new Application();
 	await app.init({
 		background: "#1099bb",
-		resizeTo: window,
 		antialias: true,
+		resizeTo: window,
 		autoDensity: true,
 	});
 	document.getElementById("app")!.appendChild(app.canvas);
@@ -22,6 +22,12 @@ import { LotteryNumber } from "./components/lotteryNumber";
 	const root = new LayoutContainer();
 	app.stage.addChild(root);
 
+	const debugText = new Text({ text: "hi" });
+	app.stage.addChild(debugText);
+	debugText.style.fill = 'white';
+	debugText.style.stroke = 'black';
+	debugText.style.fontWeight = 'bold';
+
 	const caller = new LayoutContainer();
 	root.addChild(caller);
 	caller.layout.y.sizing = 100;
@@ -33,7 +39,6 @@ import { LotteryNumber } from "./components/lotteryNumber";
 	caller.addChild(calls);
 	calls.layout.y.sizing = 50;
 	calls.layout.x.sizing = 300;
-
 
 	const numberGrid = new LayoutContainer();
 	root.addChild(numberGrid);
@@ -74,6 +79,23 @@ import { LotteryNumber } from "./components/lotteryNumber";
 		const heightScale = Math.min(height / minHeight, 10);
 
 		const scale = Math.min(widthScale, heightScale);
+
+		app.renderer.resolution = window.devicePixelRatio > 1 ? window.devicePixelRatio : 1;
+
+		debugText.position.set(10 * scale);
+		debugText.style.fontSize = 14 * scale;
+		debugText.text = `window
+width: ${window.innerWidth.toFixed(2)}
+height: ${window.innerHeight.toFixed(2)}
+dpr: ${window.devicePixelRatio.toFixed(2)}
+
+renderer
+width: ${width.toFixed(2)}
+height: ${height.toFixed(2)}
+resolution: ${app.renderer.resolution.toFixed(2)}
+
+scale: ${scale.toFixed(2)}`;
+
 
 		layout(root, scale, debugGraphics);
 	};
