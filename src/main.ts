@@ -11,7 +11,7 @@ import { LotteryNumber } from "./components/lotteryNumber";
 		resizeTo: window,
 		antialias: true
 	});
-	document.getElementById("pixi-container")!.appendChild(app.canvas);
+	document.getElementById("app")!.appendChild(app.canvas);
 
 	initDevtools({ app });
 
