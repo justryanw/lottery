@@ -10,6 +10,8 @@ export default tseslint.config(
       ecmaVersion: "latest",
       sourceType: "module",
     },
-    rules: {},
+    rules: {
+      "comma-dangle": ["error", "always-multiline"],
+    },
   },
 );
