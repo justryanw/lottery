@@ -2,7 +2,7 @@ import { Application, Graphics, Text } from "pixi.js";
 import { initDevtools } from '@pixi/devtools';
 import { LayoutContainer, layout } from "./layout";
 import { arrayFrom } from "./utils";
-import { LotteryNumber } from "./components/lotteryNumber";
+import { LotteryNumber } from "./components/lottery-number";
 
 (async () => {
 	const app = new Application();

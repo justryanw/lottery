@@ -17,8 +17,8 @@
   }:
     flake-utils.lib.eachDefaultSystem (system: let
       pkgs = import nixpkgs {inherit system;};
-      node = pkgs.nodejs_latest;
-    in {
+      node = pkgs.nodejs;
+    in rec {
       devShells.default = pkgs.mkShell {
         packages = [node];
       };
@@ -38,6 +38,10 @@
             cp -R dist $out
           '';
         };
+
+        serve = pkgs.writeShellScriptBin "serve" ''
+          ${pkgs.http-server}/bin/http-server ${packages.default}
+        '';
       };
     });
 }
