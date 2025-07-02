@@ -24,7 +24,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@main
+        uses: DeterminateSystems/determinate-nix-action@v3
+        with:
+          extra-conf: lazy-trees = true
+      - uses: DeterminateSystems/magic-nix-cache-action@main
       - name: Install Dependancies
         run: nix develop -c npm i
       - name: Build
