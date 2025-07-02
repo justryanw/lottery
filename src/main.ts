@@ -1,8 +1,12 @@
-import { Application, Graphics } from "pixi.js";
+import { Application } from "pixi.js";
 import { initDevtools } from '@pixi/devtools';
 import { Root } from "./components/root";
 import { layout } from "./layout";
-import { DebugText } from "./debug-text";
+import { DebugGraphics, DebugText } from "./debug";
+
+const DRAW_DEBUG_TEXT = false;
+const DRAW_DEBUG_GRAPHICS = true;
+export const DRAW_ALL_CONTAINERS = false;
 
 (async () => {
 	const app = new Application();
@@ -16,16 +20,19 @@ import { DebugText } from "./debug-text";
 
 	initDevtools({ app });
 
-	const debugGraphics = new Graphics();
-	app.stage.addChild(debugGraphics);
+	let debugGraphics: DebugGraphics;
+	if (DRAW_DEBUG_GRAPHICS) debugGraphics = new DebugGraphics(app.stage);
 
 	const root = new Root(app.stage);
 
-	const debugText = new DebugText(app.stage);
+	let debugText: DebugText;
+	if (DRAW_DEBUG_TEXT) debugText = new DebugText(app.stage);
 
 	const onResize = () => {
 		const { width, height } = app.renderer;
 		const { x, y } = root.layout;
+
+		app.renderer.resolution = window.devicePixelRatio > 1 ? window.devicePixelRatio : 1;
 
 		x.sizing = x.length = width;
 		y.sizing = y.length = height;
@@ -38,11 +45,10 @@ import { DebugText } from "./debug-text";
 
 		const scale = Math.min(widthScale, heightScale);
 
-		app.renderer.resolution = window.devicePixelRatio > 1 ? window.devicePixelRatio : 1;
+		layout(root, scale);
 
-		layout(root, scale, debugGraphics);
-
-		debugText.draw(scale, app.renderer);
+		if (debugText) debugText.draw(scale, app.renderer);
+		if (debugGraphics) debugGraphics.draw(root, scale)
 	};
 
 	app.renderer.on('resize', onResize);

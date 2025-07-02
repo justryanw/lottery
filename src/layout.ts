@@ -1,4 +1,4 @@
-import { Color, Container, Graphics, Text } from "pixi.js";
+import { Container, Graphics, Text } from "pixi.js";
 import { isNumber } from "./utils";
 
 class Axis {
@@ -51,7 +51,7 @@ export const LayoutContainer = WithLayout(Container);
 export const LayoutText = WithLayout(Text);
 export const LayoutGraphics = WithLayout(Graphics);
 
-function traverseLayoutContainers(
+export function traverseLayoutContainers(
 	container: Container,
 	preOrder?: (container: ContainerWithLayout, depth: number) => void,
 	postOrder?: (container: ContainerWithLayout, depth: number) => void,
@@ -186,30 +186,10 @@ function positionContainers(root: Container, scale: number) {
 	});
 }
 
-function drawDebug(root: Container, graphics: Graphics, scale: number) {
-	traverseLayoutContainers(root, (container, depth) => {
-		if (!container.layout.drawDebug) return;
-		const { x, y } = container.getGlobalPosition()
-
-		const color = new Color().setValue({ h: 40 * depth, s: 60, v: 100 });
-		const strokeColor = new Color().setValue({ h: 40 * depth, s: 50, v: 50 });
-
-		graphics
-			.rect(x, y, container.layout.x.length, container.layout.y.length)
-			.fill({ color, alpha: 1 })
-			.stroke({ width: 3 * scale, alignment: 1, color: strokeColor });
-	});
-}
-
-export function layout(root: Container, scale: number = 1, debugGraphics?: Graphics) {
+export function layout(root: Container, scale: number = 1) {
 	scaleText(root, scale);
 	fitContainers(root, scale);
 	growContainers(root, scale);
 	positionContainers(root, scale);
 	traverseLayoutContainers(root, (container) => container.layout.postLayout?.(scale));
-
-	if (debugGraphics) {
-		debugGraphics.clear();
-		drawDebug(root, debugGraphics, scale);
-	}
 }
