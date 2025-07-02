@@ -27,17 +27,16 @@ jobs:
         uses: DeterminateSystems/determinate-nix-action@v3
         with:
           extra-conf: lazy-trees = true
-      - uses: DeterminateSystems/magic-nix-cache-action@main
-      - name: Install Dependancies
-        run: nix develop -c npm i
+      - name: Setup Cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
       - name: Build
-        run: nix develop -c npm run build
+        run: nix build
       - name: Setup Pages
         uses: actions/configure-pages@v3
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: "./dist"
+          path: "./result"
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

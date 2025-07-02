@@ -5,15 +5,34 @@
   };
 
   outputs = {
+    self,
     nixpkgs,
     flake-utils,
     ...
   }:
     flake-utils.lib.eachDefaultSystem (system: let
       pkgs = import nixpkgs {inherit system;};
+      node = pkgs.nodejs_latest;
     in {
       devShells.default = pkgs.mkShell {
-        packages = [pkgs.nodejs];
+        packages = [node];
+      };
+
+      packages = {
+        default = pkgs.buildNpmPackage {
+          name = "lottery";
+          src = self;
+          buildInputs = [node];
+          npmConfigHook = pkgs.importNpmLock.npmConfigHook;
+
+          npmDeps = pkgs.importNpmLock {
+            npmRoot = ./.;
+          };
+
+          installPhase = ''
+            cp -R dist $out
+          '';
+        };
       };
     });
 }
