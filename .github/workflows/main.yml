@@ -27,8 +27,10 @@ jobs:
         uses: DeterminateSystems/determinate-nix-action@v3
         with:
           extra-conf: lazy-trees = true
-      - name: Setup Cache
-        uses: DeterminateSystems/magic-nix-cache-action@main
+      - uses: cachix/cachix-action@v14
+        with:
+          name: justryanw
+          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
       - name: Build
         run: nix build
       - name: Setup Pages
