@@ -9,3 +9,15 @@ export function arrayFrom<U>(
 ): U[] {
 	return Array.from({ length }, (_, index) => mapfn(index), thisArg);
 }
+
+export type Result<T = void, E = Error> =
+	| { success: true; data?: T }
+	| { success: false; error: E };
+
+export function Ok<T = void>(data?: T): Result<T, any> {
+	return { success: true, data };
+}
+
+export function Err<E>(error: E): Result<any, E> {
+	return { success: false, error };
+}
