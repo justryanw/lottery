@@ -43,7 +43,7 @@ type ContainerWithLayout = Container & {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function hasLayoutMixin(obj: any): obj is ContainerWithLayout {
+export function hasLayoutMixin(obj: any): obj is ContainerWithLayout {
 	return obj && 'layout' in obj;
 }
 

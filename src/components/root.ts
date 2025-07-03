@@ -2,11 +2,12 @@ import { Container } from "pixi.js";
 import { LayoutContainer } from "../layout";
 import { arrayFrom } from "../utils";
 import { LotteryNumber } from "./lottery-number";
+import { Menu } from "./menu";
 
 export class Root extends LayoutContainer {
 	caller = new LayoutContainer();
 	numberGrid = new LayoutContainer();
-	menu = new LayoutContainer();
+	menu: Menu;
 
 	constructor(parent: Container) {
 		super();
@@ -42,8 +43,6 @@ export class Root extends LayoutContainer {
 			});
 		});
 
-		this.addChild(this.menu);
-		this.menu.layout.y.sizing = 100;
-		this.menu.layout.x.sizing = 'grow';
+		this.menu = new Menu(this);
 	}
 }
