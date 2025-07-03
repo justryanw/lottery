@@ -1,5 +1,5 @@
-import { Container } from "pixi.js";
-import { LayoutContainer, LayoutText } from "../layout";
+import { Container, Texture } from "pixi.js";
+import { LayoutContainer, LayoutSprite, LayoutText } from "../layout";
 import { ContainerBackground } from "./container-background";
 
 export class Menu extends LayoutContainer {
@@ -23,7 +23,15 @@ export class Menu extends LayoutContainer {
 		buttonsRow.addChild(luckyDipButton);
 		luckyDipButton.layout.y.sizing = 50;
 		luckyDipButton.layout.x.sizing = 50;
+		luckyDipButton.layout.x.childAlignment = 'center';
+		luckyDipButton.layout.y.childAlignment = 'center';
 		new ContainerBackground(luckyDipButton);
+
+		const diceSprite = new LayoutSprite({ texture: Texture.from('dice') });
+		diceSprite.tint = { h: 40, s: 50, v: 30 };
+		luckyDipButton.addChild(diceSprite);
+		diceSprite.layout.y.sizing = 30;
+		diceSprite.layout.x.sizing = 30;
 
 		const playButton = new LayoutContainer();
 		buttonsRow.addChild(playButton);
@@ -41,6 +49,14 @@ export class Menu extends LayoutContainer {
 		buttonsRow.addChild(resetButton);
 		resetButton.layout.y.sizing = 50;
 		resetButton.layout.x.sizing = 50;
+		resetButton.layout.x.childAlignment = 'center';
+		resetButton.layout.y.childAlignment = 'center';
 		new ContainerBackground(resetButton);
+
+		const resetSprite = new LayoutSprite({ texture: Texture.from('arrow-counterclockwise') });
+		resetSprite.tint = { h: 40, s: 50, v: 30 };
+		resetButton.addChild(resetSprite);
+		resetSprite.layout.y.sizing = 30;
+		resetSprite.layout.x.sizing = 30;
 	}
 }

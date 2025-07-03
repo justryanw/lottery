@@ -1,4 +1,4 @@
-import { Container, Graphics, Text } from "pixi.js";
+import { Container, Graphics, Sprite, Text } from "pixi.js";
 import { isNumber } from "./utils";
 
 class Axis {
@@ -50,6 +50,7 @@ export function hasLayoutMixin(obj: any): obj is ContainerWithLayout {
 export const LayoutContainer = WithLayout(Container);
 export const LayoutText = WithLayout(Text);
 export const LayoutGraphics = WithLayout(Graphics);
+export const LayoutSprite = WithLayout(Sprite);
 
 export function traverseLayoutContainers(
 	container: Container,
@@ -78,6 +79,15 @@ function scaleText(root: Container, scale: number) {
 			container.style.fontSize = container.layout.fontSize * scale;
 			container.layout.x.sizing = container.width / scale;
 			container.layout.y.sizing = container.height / scale;
+		}
+	});
+}
+
+function scaleSprites(root: Container) {
+	traverseLayoutContainers(root, (container) => {
+		if (container instanceof Sprite) {
+			container.width = container.layout.x.length;
+			container.height = container.layout.y.length;
 		}
 	});
 }
@@ -191,5 +201,7 @@ export function layout(root: Container, scale: number = 1) {
 	fitContainers(root, scale);
 	growContainers(root, scale);
 	positionContainers(root, scale);
+	scaleSprites(root);
+
 	traverseLayoutContainers(root, (container) => container.layout.postLayout?.(scale));
 }

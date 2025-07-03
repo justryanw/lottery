@@ -1,10 +1,11 @@
-import { Application } from "pixi.js";
+import { Application, Assets } from "pixi.js";
 import { initDevtools } from '@pixi/devtools';
 import { Root } from "./components/root";
 import { layout } from "./layout";
 import { DebugGraphics, DebugText } from "./debug";
 import { Game } from "./game";
 import { TestServer } from "./server-adaptors/test-server";
+import { manifest } from "./manifest";
 
 const DRAW_DEBUG_TEXT = false;
 const DRAW_DEBUG_GRAPHICS = true;
@@ -22,6 +23,8 @@ export const DRAW_ALL_CONTAINERS = false;
 
 	initDevtools({ app });
 
+	await Assets.init({ manifest });
+	await Assets.loadBundle("game");
 
 	const root = new Root(app.stage);
 
