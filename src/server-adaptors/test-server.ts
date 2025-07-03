@@ -1,26 +1,8 @@
 import { Result } from "typescript-result";
-import { err } from "./utils";
+import { ServerAdaptor, SessionState } from "./server-adaptor";
+import { err } from "../utils";
 
-export interface SessionState {
-	gameState: GameState | null;
-	currentBalance: number;
-}
-
-export interface GameState {
-	selectedNumbers: number[];
-	calledNumbers: number[];
-	winAmount: number;
-	currentStage: number;
-}
-
-export interface Server {
-	getSession(): Result<SessionState, Error>,
-	play(selectedNumbers: number[]): Result<GameState, Error>,
-	reset(): Result<void, Error>,
-	advanceStage(): Result<void, Error>,
-}
-
-export class TestServer implements Server {
+export class TestServer implements ServerAdaptor {
 	session: SessionState = {
 		gameState: null,
 		currentBalance: 0,
@@ -28,20 +10,21 @@ export class TestServer implements Server {
 
 	winValues = [50, 100, 200, 500];
 
-	getSession() {
+	async getSession() {
 		return Result.ok(this.session);
 	}
 
-	play(selectedNumbers: number[]) {
+	async play(selectedNumbers: number[]) {
 		if (this.session.gameState) return err("Cannot start new game while one is in progress.");
 		if (selectedNumbers.length !== 6) return err("6 numbers must be selected.");
 		this.startGame(selectedNumbers);
+		await new Promise(resolve => setTimeout(resolve, 1000));
 
 		if (!this.session.gameState) return err("Error creating game state.");
 		return Result.ok(this.session.gameState);
 	}
 
-	reset() {
+	async reset() {
 		this.session = {
 			gameState: null,
 			currentBalance: 0,
@@ -50,7 +33,7 @@ export class TestServer implements Server {
 		return Result.ok();
 	}
 
-	advanceStage() {
+	async advanceStage() {
 		if (!this.session.gameState) return err("Cannot advance game stage while no game is in progress.");
 
 		this.session.gameState.currentStage++;

@@ -3,8 +3,8 @@ import { initDevtools } from '@pixi/devtools';
 import { Root } from "./components/root";
 import { layout } from "./layout";
 import { DebugGraphics, DebugText } from "./debug";
-import { TestServer } from "./server";
 import { Game } from "./game";
+import { TestServer } from "./server-adaptors/test-server";
 
 const DRAW_DEBUG_TEXT = false;
 const DRAW_DEBUG_GRAPHICS = true;
@@ -29,9 +29,6 @@ export const DRAW_ALL_CONTAINERS = false;
 
 	let debugText: DebugText;
 	if (DRAW_DEBUG_TEXT) debugText = new DebugText(app.stage);
-
-	const server = new TestServer();
-	new Game(server);
 
 	const onResize = () => {
 		const { width, height } = app.renderer;
@@ -58,4 +55,8 @@ export const DRAW_ALL_CONTAINERS = false;
 
 	app.renderer.on('resize', onResize);
 	onResize();
+
+	const server = new TestServer();
+	const game = new Game(server);
+	await game.play();
 })();
