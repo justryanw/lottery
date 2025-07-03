@@ -1,22 +1,23 @@
-import { Err, Ok, Result } from "./utils";
+import { Result } from "typescript-result";
+import { err } from "./utils";
 
-interface SessionState {
+export interface SessionState {
 	gameState: GameState | null;
 	currentBalance: number;
 }
 
-interface GameState {
+export interface GameState {
 	selectedNumbers: number[];
 	calledNumbers: number[];
 	winAmount: number;
 	currentStage: number;
 }
 
-interface Server {
-	getSession(): Result<SessionState>,
-	play(selectedNumbers: number[]): Result<GameState>,
-	reset(): Result,
-	advanceStage(): Result,
+export interface Server {
+	getSession(): Result<SessionState, Error>,
+	play(selectedNumbers: number[]): Result<GameState, Error>,
+	reset(): Result<void, Error>,
+	advanceStage(): Result<void, Error>,
 }
 
 export class TestServer implements Server {
@@ -27,32 +28,39 @@ export class TestServer implements Server {
 
 	winValues = [50, 100, 200, 500];
 
-	getSession(): Result<SessionState> {
-		return Ok(this.session);
+	getSession() {
+		return Result.ok(this.session);
 	}
 
-	play(selectedNumbers: number[]): Result<GameState> {
-		if (this.session.gameState !== null)
-			return Err(new Error("Cannot start new game while one is in progress."));
-
+	play(selectedNumbers: number[]) {
+		if (this.session.gameState) return err("Cannot start new game while one is in progress.");
+		if (selectedNumbers.length !== 6) return err("6 numbers must be selected.");
 		this.startGame(selectedNumbers);
 
-		if (this.session.gameState === null)
-			return Err(new Error("Error creating game state."));
-
-		return Ok(this.session.gameState);
+		if (!this.session.gameState) return err("Error creating game state.");
+		return Result.ok(this.session.gameState);
 	}
 
-	reset(): Result<void> {
-		return Err(new Error("Method not implemented."));
+	reset() {
+		this.session = {
+			gameState: null,
+			currentBalance: 0,
+		};
+
+		return Result.ok();
 	}
 
-	advanceStage(): Result<void> {
-		if (this.session.gameState === null)
-			return Err(new Error("Cannot advance game stage while no game is in progress."));
+	advanceStage() {
+		if (!this.session.gameState) return err("Cannot advance game stage while no game is in progress.");
 
 		this.session.gameState.currentStage++;
-		return Ok();
+
+		if (this.session.gameState.currentStage >= 5) {
+			this.session.currentBalance += this.session.gameState.winAmount;
+			this.session.gameState = null;
+		}
+
+		return Result.ok();
 	}
 
 	startGame(selectedNumbers: number[]) {
