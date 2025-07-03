@@ -22,10 +22,11 @@ export const DRAW_ALL_CONTAINERS = false;
 
 	initDevtools({ app });
 
-	let debugGraphics: DebugGraphics;
-	if (DRAW_DEBUG_GRAPHICS) debugGraphics = new DebugGraphics(app.stage);
 
 	const root = new Root(app.stage);
+
+	let debugGraphics: DebugGraphics;
+	if (DRAW_DEBUG_GRAPHICS) debugGraphics = new DebugGraphics(app.stage);
 
 	let debugText: DebugText;
 	if (DRAW_DEBUG_TEXT) debugText = new DebugText(app.stage);

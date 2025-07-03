@@ -4,10 +4,10 @@ import { hasLayoutMixin } from "../layout";
 export class ContainerBackground extends Graphics {
 	constructor(
 		parent: Container,
-		protected color = new Color('white'),
-		protected strokeColor = new Color('gray'),
-		protected rounding = 0,
-		protected strokeWidth = 0,
+		protected rounding = 10,
+		protected strokeWidth = 3,
+		protected color = new Color({ h: 40, s: 60, v: 100 }),
+		protected strokeColor = new Color({ h: 40, s: 50, v: 50 }),
 	) {
 		super();
 		parent.addChild(this);
