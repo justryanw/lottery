@@ -8,7 +8,7 @@ export class TestServer implements ServerAdaptor {
 		currentBalance: 0,
 	};
 
-	winValues = [50, 100, 200, 500];
+	winValues = [0, 0, 0, 50, 100, 200, 500];
 
 	async getSession() {
 		return Result.ok(this.session);

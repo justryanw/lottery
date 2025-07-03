@@ -7,10 +7,11 @@ import { ContainerBackground } from "./container-background";
 import { THEME } from "../colors";
 
 export class Root extends LayoutContainer {
-	caller = new LayoutContainer();
-	mainSection = new LayoutContainer();
-	numberGrid = new LayoutContainer();
-	menu: Menu;
+	public caller = new LayoutContainer();
+	public mainSection = new LayoutContainer();
+	public numberGrid = new LayoutContainer();
+	public lotteryNumbers: LotteryNumber[] = [];
+	public menu: Menu;
 
 	constructor(parent: Container) {
 		super();
@@ -47,7 +48,8 @@ export class Root extends LayoutContainer {
 			row.layout.childSpacing = 10;
 
 			arrayFrom(rowIndex === 9 ? 5 : 6, (columnIndex) => {
-				new LotteryNumber(row, rowIndex * 6 + columnIndex + 1);
+				const num = new LotteryNumber(row, rowIndex * 6 + columnIndex + 1);
+				this.lotteryNumbers.push(num);
 			});
 		});
 

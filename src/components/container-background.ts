@@ -1,9 +1,10 @@
 import { Container, Graphics } from "pixi.js";
 import { hasLayoutMixin } from "../layout";
 import { THEME } from "../colors";
-import { SCALE } from "../main";
 
 export class ContainerBackground extends Graphics {
+	layoutScale: number = 1;
+
 	constructor(
 		parent: Container,
 		public color = THEME.button,
@@ -17,8 +18,9 @@ export class ContainerBackground extends Graphics {
 		if (hasLayoutMixin(this.parent)) this.parent.layout.postLayout = (s) => this.draw(s);
 	}
 
-	draw(scale: number = SCALE) {
+	draw(scale: number = this.layoutScale) {
 		if (!hasLayoutMixin(this.parent)) return;
+		this.layoutScale = scale;
 		this.clear();
 
 		this.roundRect(0, 0, this.parent.layout.x.length, this.parent.layout.y.length, this.rounding * scale)

@@ -12,7 +12,8 @@ const DRAW_DEBUG_TEXT = false;
 const DRAW_DEBUG_GRAPHICS = true;
 export const DRAW_ALL_CONTAINERS = false;
 
-export let SCALE: number;
+export let GAME: Game;
+export let UI: Root;
 
 (async () => {
 	const app = new Application();
@@ -29,7 +30,7 @@ export let SCALE: number;
 	await Assets.init({ manifest });
 	await Assets.loadBundle("game");
 
-	const root = new Root(app.stage);
+	UI = new Root(app.stage);
 
 	let debugGraphics: DebugGraphics;
 	if (DRAW_DEBUG_GRAPHICS) debugGraphics = new DebugGraphics(app.stage);
@@ -39,7 +40,7 @@ export let SCALE: number;
 
 	const onResize = () => {
 		const { width, height } = app.renderer;
-		const { x, y } = root.layout;
+		const { x, y } = UI.layout;
 
 		app.renderer.resolution = window.devicePixelRatio > 1 ? window.devicePixelRatio : 1;
 
@@ -52,18 +53,18 @@ export let SCALE: number;
 		const widthScale = Math.min(width / minWidth, 10);
 		const heightScale = Math.min(height / minHeight, 10);
 
-		SCALE = Math.min(widthScale, heightScale);
+		const scale = Math.min(widthScale, heightScale);
 
-		layout(root, SCALE);
+		layout(UI, scale);
 
-		if (debugText) debugText.draw(SCALE, app.renderer);
-		if (debugGraphics) debugGraphics.draw(root, SCALE)
+		if (debugText) debugText.draw(scale, app.renderer);
+		if (debugGraphics) debugGraphics.draw(UI, scale)
 	};
 
 	app.renderer.on('resize', onResize);
 	onResize();
 
 	const server = new TestServer();
-	const game = new Game(server);
-	await game.play();
+	GAME = new Game(server);
+	await GAME.play();
 })();
