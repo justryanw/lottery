@@ -1,6 +1,8 @@
 import { Container, Texture } from "pixi.js";
 import { LayoutContainer, LayoutSprite, LayoutText } from "../layout";
 import { ContainerBackground } from "./container-background";
+import { THEME } from "../colors";
+import { Button } from "./button";
 
 export class Menu extends LayoutContainer {
 	constructor(parent: Container) {
@@ -17,46 +19,35 @@ export class Menu extends LayoutContainer {
 		buttonsRow.layout.layoutDirection = 'x';
 		buttonsRow.layout.setPadding(10);
 		buttonsRow.layout.childSpacing = 10;
-		new ContainerBackground(buttonsRow);
+		new ContainerBackground(buttonsRow, THEME.backpane);
 
-		const luckyDipButton = new LayoutContainer();
-		buttonsRow.addChild(luckyDipButton);
+		const luckyDipButton = new Button(buttonsRow);
 		luckyDipButton.layout.y.sizing = 50;
 		luckyDipButton.layout.x.sizing = 50;
-		luckyDipButton.layout.x.childAlignment = 'center';
-		luckyDipButton.layout.y.childAlignment = 'center';
-		new ContainerBackground(luckyDipButton);
 
 		const diceSprite = new LayoutSprite({ texture: Texture.from('dice') });
-		diceSprite.tint = { h: 40, s: 50, v: 30 };
+		diceSprite.tint = THEME.symbol;
 		luckyDipButton.addChild(diceSprite);
-		diceSprite.layout.y.sizing = 30;
-		diceSprite.layout.x.sizing = 30;
+		diceSprite.layout.y.sizing = 20;
+		diceSprite.layout.x.sizing = 20;
 
-		const playButton = new LayoutContainer();
-		buttonsRow.addChild(playButton);
+		const playButton = new Button(buttonsRow);
 		playButton.layout.y.sizing = 50;
 		playButton.layout.x.sizing = 100;
-		playButton.layout.x.childAlignment = 'center';
-		playButton.layout.y.childAlignment = 'center';
-		new ContainerBackground(playButton);
 
 		const playButtonText = new LayoutText({ text: "Play" });
 		playButton.addChild(playButtonText);
 		playButtonText.layout.fontSize = 24;
+		playButtonText.style.fill = THEME.symbol;
 
-		const resetButton = new LayoutContainer();
-		buttonsRow.addChild(resetButton);
+		const resetButton = new Button(buttonsRow);
 		resetButton.layout.y.sizing = 50;
 		resetButton.layout.x.sizing = 50;
-		resetButton.layout.x.childAlignment = 'center';
-		resetButton.layout.y.childAlignment = 'center';
-		new ContainerBackground(resetButton);
 
 		const resetSprite = new LayoutSprite({ texture: Texture.from('arrow-counterclockwise') });
-		resetSprite.tint = { h: 40, s: 50, v: 30 };
+		resetSprite.tint = THEME.symbol;
 		resetButton.addChild(resetSprite);
-		resetSprite.layout.y.sizing = 30;
-		resetSprite.layout.x.sizing = 30;
+		resetSprite.layout.y.sizing = 20;
+		resetSprite.layout.x.sizing = 20;
 	}
 }

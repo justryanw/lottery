@@ -3,9 +3,12 @@ import { LayoutContainer } from "../layout";
 import { arrayFrom } from "../utils";
 import { LotteryNumber } from "./lottery-number";
 import { Menu } from "./menu";
+import { ContainerBackground } from "./container-background";
+import { THEME } from "../colors";
 
 export class Root extends LayoutContainer {
 	caller = new LayoutContainer();
+	mainSection = new LayoutContainer();
 	numberGrid = new LayoutContainer();
 	menu: Menu;
 
@@ -24,9 +27,14 @@ export class Root extends LayoutContainer {
 		calls.layout.y.sizing = 50;
 		calls.layout.x.sizing = 300;
 
-		this.addChild(this.numberGrid);
-		this.numberGrid.layout.y.sizing = 'grow';
-		this.numberGrid.layout.x.sizing = 'grow';
+		this.addChild(this.mainSection);
+		this.mainSection.layout.y.sizing = 'grow';
+		this.mainSection.layout.x.sizing = 'grow';
+		this.mainSection.layout.x.childAlignment = 'center';
+		this.mainSection.layout.y.childAlignment = 'center';
+
+		this.mainSection.addChild(this.numberGrid);
+		new ContainerBackground(this.numberGrid, THEME.backpane);
 		this.numberGrid.layout.x.childAlignment = 'center';
 		this.numberGrid.layout.y.childAlignment = 'center';
 		this.numberGrid.layout.childSpacing = 10;
