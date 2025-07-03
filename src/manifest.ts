@@ -13,6 +13,10 @@ export const manifest: AssetsManifest = {
 					alias: 'dice',
 					src: 'assets/dice_3D_detailed.png',
 				},
+				{
+					alias: 'glass-002',
+					src: 'assets/glass_002.ogg',
+				},
 			],
 		},
 	],

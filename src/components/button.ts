@@ -2,6 +2,7 @@ import { Container } from "pixi.js";
 import { LayoutContainer } from "../layout";
 import { ContainerBackground } from "./container-background";
 import { THEME } from "../colors";
+import { sound } from "@pixi/sound";
 
 export class Button extends LayoutContainer {
 	background: ContainerBackground;
@@ -32,6 +33,8 @@ export class Button extends LayoutContainer {
 			this.background.color = THEME.background;
 			this.background.strokeColor = THEME.button;
 			this.background.draw()
+
+			sound.play('glass-002', { speed: 1 + (Math.random() - 0.5) * 0.2 });
 		});
 
 		this.on('pointerup', this.pointerUp);

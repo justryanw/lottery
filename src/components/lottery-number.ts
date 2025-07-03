@@ -1,19 +1,14 @@
 import { Container } from "pixi.js";
-import { LayoutContainer, LayoutText } from "../layout";
-import { ContainerBackground } from "./container-background";
+import { LayoutText } from "../layout";
 import { THEME } from "../colors";
+import { Button } from "./button";
 
-export class LotteryNumber extends LayoutContainer {
+export class LotteryNumber extends Button {
 	constructor(parent: Container, index: number) {
-		super();
-		parent.addChild(this);
-
-		new ContainerBackground(this);
+		super(parent);
 
 		this.layout.y.sizing = 40;
 		this.layout.x.sizing = 40;
-		this.layout.x.childAlignment = 'center';
-		this.layout.y.childAlignment = 'center';
 
 		const text = new LayoutText({ text: index })
 		this.addChild(text);
