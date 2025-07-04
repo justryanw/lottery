@@ -90,10 +90,10 @@ export class Game {
 			);
 
 		this.selectedNumbers = [];
-		this.updateUiButtons();
 		this.clearCaller();
 		this.setGameInProgres(false);
 		this.setBalanceText(this.session);
+		this.updateUiButtons();
 	}
 
 	updateUiButtons() {
@@ -101,5 +101,11 @@ export class Game {
 			const i = num - 1;
 			UI.lotteryNumbers[i].toggleSelected(this.selectedNumbers.includes(num));
 		});
+		if (this.selectedNumbers.length === 6) {
+			UI.menu.playButton.setActive(true);
+		} else {
+			UI.menu.playButton.setActive(false);
+
+		}
 	}
 }

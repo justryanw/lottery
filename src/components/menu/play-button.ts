@@ -7,6 +7,7 @@ import { GAME } from "../../main";
 export class PlayButton extends Button {
 	constructor(parent: Container) {
 		super(parent);
+		this.setActive(false);
 
 		this.layout.y.sizing = 50;
 		this.layout.x.sizing = 100;

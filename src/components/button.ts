@@ -56,6 +56,8 @@ export class Button extends LayoutContainer {
 			this.pressed = false;
 			this.setState('up')
 		}
+
+		this.alpha = active ? 1 : 0.5;
 	}
 
 	setHovered(hovered: boolean) {
