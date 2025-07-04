@@ -47,6 +47,17 @@ export class Button extends LayoutContainer {
 		this.on('pointerupoutside', () => this.setPressed(false));
 	}
 
+	setActive(active: boolean) {
+		this.interactive = active;
+		this.cursor = active ? 'pointer' : 'none';
+		if (active) {
+			this.setState(this.pressed ? 'down' : this.hovered ? 'hover' : 'up');
+		} else {
+			this.pressed = false;
+			this.setState('up')
+		}
+	}
+
 	setHovered(hovered: boolean) {
 		this.hovered = hovered;
 		if (!this.pressed) this.setState(hovered ? 'hover' : 'up');

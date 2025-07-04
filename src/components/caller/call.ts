@@ -6,11 +6,12 @@ import { ContainerBackground } from "../container-background";
 
 export class Call extends LayoutContainer {
 	text: TextWithLayout;
+	background: ContainerBackground;
 
 	constructor(parent: Container) {
 		super();
 		parent.addChild(this);
-		new ContainerBackground(this, THEME.button);
+		this.background = new ContainerBackground(this, THEME.button);
 		this.layout.x.sizing = this.layout.y.sizing = 40;
 		this.layout.x.childAlignment = this.layout.y.childAlignment = 'center';
 

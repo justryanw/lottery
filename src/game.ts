@@ -1,7 +1,8 @@
 import { Result } from "typescript-result";
 import { NUMBERS, REDRAW, UI } from "./main";
-import { ServerAdaptor, SessionState } from "./server-adaptors/server-adaptor";
+import { GameState, ServerAdaptor, SessionState } from "./server-adaptors/server-adaptor";
 import { selectUniqueRandomFromArray } from "./utils";
+import { THEME } from "./colors";
 
 export class Game {
 	selectedNumbers: number[] = [];
@@ -12,12 +13,12 @@ export class Game {
 	) { }
 
 	public async play() {
+		this.setGameInProgres(true);
 		await Result.fromAsync(this.server.play(this.selectedNumbers))
 			.onFailure((error) => console.log(error))
 			.onSuccess((gameState) => {
 				this.session.gameState = gameState;
-				this.session.gameState.calledNumbers.forEach((num, i) => UI.caller.calls[i].text.text = num);
-				REDRAW();
+				this.setCaller(gameState);
 				console.log("Succesfully started game");
 			})
 			.map(() => this.server.advanceStage())
@@ -28,7 +29,29 @@ export class Game {
 			.onFailure((error) => console.log(error))
 			.onSuccess(() => {
 				console.log("Succesfully ended game");
-			})
+			});
+
+		this.setGameInProgres(false);
+	}
+
+	setGameInProgres(inProgress: boolean) {
+		console.log(!inProgress);
+		UI.menu.playButton.setActive(!inProgress);
+		UI.menu.luckyDipButton.setActive(!inProgress);
+		UI.lotteryNumbers.forEach((num) => num.setActive(!inProgress));
+	}
+
+	public setCaller(gameState: GameState) {
+		gameState.calledNumbers.forEach((num, i) => {
+			const call = UI.caller.calls[i];
+			call.text.text = num
+			if (gameState.selectedNumbers.includes(num)) {
+				call.background.color = THEME.select;
+			} else {
+				call.background.color = THEME.button;
+			}
+		});
+		REDRAW();
 	}
 
 	public toggleNumber(number: number) {

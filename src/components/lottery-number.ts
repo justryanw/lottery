@@ -1,4 +1,4 @@
-import { Color, Container, Text } from "pixi.js";
+import { Container, Text } from "pixi.js";
 import { hasLayoutMixin, LayoutText } from "../layout";
 import { THEME } from "../colors";
 import { Button } from "./button";
@@ -12,7 +12,6 @@ export class LotteryNumber extends Button {
 
 		this.layout.y.sizing = 40;
 		this.layout.x.sizing = 40;
-		this.strokeColor = new Color("#026AA2");
 
 		this.text = new LayoutText({ text: index });
 		this.addChild(this.text);
@@ -27,9 +26,11 @@ export class LotteryNumber extends Button {
 
 	public toggleSelected(selected: boolean) {
 		if (selected) {
-			this.strokeHoverColor = new Color("#026AA2");
+			this.strokeColor = THEME.select
+			this.strokeHoverColor = THEME.select
 			this.strokeWidth = 3;
 		} else {
+			this.strokeColor = THEME.button;
 			this.strokeHoverColor = THEME.hover;
 			this.strokeWidth = 0;
 		}

@@ -21,7 +21,7 @@ export class Root extends LayoutContainer {
 
 		const callerSection = new LayoutContainer();
 		this.addChild(callerSection);
-		callerSection.layout.y.sizing = 100;
+		callerSection.layout.y.sizing = 'grow';
 		callerSection.layout.x.sizing = 'grow';
 		callerSection.layout.y.childAlignment = 'center';
 		callerSection.layout.x.childAlignment = 'center';

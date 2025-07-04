@@ -7,6 +7,7 @@ class Theme {
 		public readonly button = new Color({ h: 217, s: 34, v: 30 }),
 		public readonly hover = new Color({ h: 217, s: 34, v: 50 }),
 		public readonly symbol = new Color("#ECECED"),
+		public readonly select = new Color("#026AA2"),
 	) { }
 };
 
