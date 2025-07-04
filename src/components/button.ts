@@ -22,7 +22,7 @@ export class Button extends LayoutContainer {
 	public strokeHoverWidth = 2;
 
 	public pressColor: Color = THEME.backpane;
-	public strokePressColor: Color = THEME.hover;
+	public strokePressColor: Color = THEME.button;
 	public strokePressWidth = 2;
 
 	constructor(

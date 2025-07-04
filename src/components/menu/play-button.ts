@@ -17,6 +17,6 @@ export class PlayButton extends Button {
 		playButtonText.layout.fontSize = 24;
 		playButtonText.style.fill = THEME.symbol;
 
-		this.on("pointerdown", async () => await GAME.play());
+		this.on("pointerup", async () => await GAME.play());
 	}
 }
