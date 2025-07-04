@@ -41,7 +41,6 @@ export class DebugGraphics extends Graphics {
 	}
 
 	draw(root: Container, scale: number) {
-		this.clear();
 		traverseLayoutContainers(root, (container, depth) => {
 			if (!DRAW_ALL_CONTAINERS && !container.layout.drawDebug) return;
 			const { x, y } = container.getGlobalPosition()

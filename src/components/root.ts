@@ -1,4 +1,4 @@
-import { Container } from "pixi.js";
+import { BlurFilter, Container } from "pixi.js";
 import { LayoutContainer } from "../layout";
 import { arrayFrom } from "../utils";
 import { LotteryNumber } from "./lottery-number";
@@ -11,6 +11,7 @@ export class Root extends LayoutContainer {
 	public mainSection = new LayoutContainer();
 	public numberGrid = new LayoutContainer();
 	public lotteryNumbers: LotteryNumber[] = [];
+	public blurFilter: BlurFilter;
 
 	public caller: Caller;
 	public menu: Menu;
@@ -18,6 +19,10 @@ export class Root extends LayoutContainer {
 	constructor(parent: Container) {
 		super();
 		parent.addChild(this);
+
+		this.blurFilter = new BlurFilter();
+		this.blurFilter.blur = 2;
+		this.filters = [this.blurFilter];
 
 		const callerSection = new LayoutContainer();
 		this.addChild(callerSection);

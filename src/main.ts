@@ -9,6 +9,7 @@ import { manifest } from "./manifest";
 import { THEME } from "./colors";
 import { arrayFrom } from "./utils";
 import { Result } from "typescript-result";
+import { WinModal } from "./components/win-modal";
 
 const DRAW_DEBUG_TEXT = false;
 const DRAW_DEBUG_GRAPHICS = true;
@@ -18,6 +19,7 @@ export const NUMBERS = arrayFrom(59, (i) => i + 1);
 
 export let GAME: Game;
 export let UI: Root;
+export let WINMODAL: WinModal;
 
 export let REDRAW: () => void;
 
@@ -37,6 +39,7 @@ export let REDRAW: () => void;
 	await Assets.loadBundle("game");
 
 	UI = new Root(app.stage);
+	WINMODAL = new WinModal(app.stage);
 
 	let debugGraphics: DebugGraphics;
 	if (DRAW_DEBUG_GRAPHICS) debugGraphics = new DebugGraphics(app.stage);
@@ -63,8 +66,17 @@ export let REDRAW: () => void;
 
 		layout(UI, scale);
 
+		WINMODAL.layout.x.length = x.length;
+		WINMODAL.layout.y.length = y.length;
+
+		layout(WINMODAL, scale);
+
 		if (debugText) debugText.draw(scale, app.renderer);
-		if (debugGraphics) debugGraphics.draw(UI, scale)
+		if (debugGraphics) {
+			debugGraphics.clear();
+			debugGraphics.draw(UI, scale)
+			debugGraphics.draw(WINMODAL, scale)
+		};
 	};
 
 	app.renderer.on('resize', onResize);
