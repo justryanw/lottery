@@ -1,6 +1,6 @@
 import { Result } from "typescript-result";
 import { NUMBERS, REDRAW, UI, WINMODAL } from "./main";
-import { GameState, ServerAdaptor, SessionState } from "./server-adaptors/server-adaptor";
+import { ServerAdaptor, SessionState } from "./server-adaptors/server-adaptor";
 import { formatCurrency, selectUniqueRandomFromArray } from "./utils";
 import { THEME } from "./colors";
 
