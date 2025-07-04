@@ -21,7 +21,8 @@ export class Root extends LayoutContainer {
 		parent.addChild(this);
 
 		this.blurFilter = new BlurFilter();
-		this.blurFilter.blur = 0;
+		this.blurFilter.blur = 4;
+		this.blurFilter.enabled = false;
 		this.filters = [this.blurFilter];
 
 		const callerSection = new LayoutContainer();

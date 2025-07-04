@@ -57,14 +57,14 @@ export class WinModal extends LayoutContainer {
 	public async show(winAmount: number) {
 		this.winText.text = `You have won ${formatCurrency(winAmount)}`;
 		this.visible = true;
-		UI.blurFilter.blur = 4;
+		UI.blurFilter.enabled = true;
 		REDRAW();
 
 		return new Promise<void>((resolve) => {
 			const onClick = () => {
 				this.closeButton.removeListener('pointerdown', onClick)
 				this.visible = false;
-				UI.blurFilter.blur = 0;
+				UI.blurFilter.enabled = false;
 				resolve();
 			}
 
