@@ -1,7 +1,7 @@
 import { Result } from "typescript-result";
-import { NUMBERS, REDRAW, UI } from "./main";
+import { NUMBERS, REDRAW, UI, WINMODAL } from "./main";
 import { GameState, ServerAdaptor, SessionState } from "./server-adaptors/server-adaptor";
-import { selectUniqueRandomFromArray } from "./utils";
+import { formatCurrency, selectUniqueRandomFromArray } from "./utils";
 import { THEME } from "./colors";
 
 export class Game {
@@ -16,34 +16,31 @@ export class Game {
 
 	public async play() {
 		this.setGameInProgres(true);
+
 		await Result.fromAsync(this.server.play(this.selectedNumbers))
+			.onSuccess(() => this.gameLoop())
 			.onSuccess((gameState) => {
-				this.session.gameState = gameState;
 				this.setCaller(gameState);
+				if (gameState.winAmount > 0) return WINMODAL.show(gameState.winAmount)
 			})
-			.map(() => this.server.advanceStage())
-			.map(() => this.server.advanceStage())
-			.map(() => this.server.advanceStage())
-			.map(() => this.server.advanceStage())
-			.map(() => this.server.advanceStage())
 			.map(() => this.server.getSession())
-			.onSuccess((session) => {
-				this.session = session;
-				this.setBalanceText(session);
-			})
-			.onFailure((error) => console.log(error))
+			.fold(
+				(session) => this.session = session,
+				(error) => console.error(error),
+			);
 
 		this.setGameInProgres(false);
 		this.setBalanceText(this.session);
 	}
 
-	setBalanceText(session: SessionState) {
-		const formattedCurrency = session.currentBalance.toLocaleString('en-GB', {
-			style: 'currency',
-			currency: 'GBP',
-		});
+	async gameLoop() {
+		for (let i = 0; i < 5; i++) {
+			await this.server.advanceStage();
+		}
+	}
 
-		UI.menu.balanceText.text = `Balance: ${formattedCurrency}`;
+	setBalanceText(session: SessionState) {
+		UI.menu.balanceText.text = `Balance: ${formatCurrency(session.currentBalance)}`;
 		REDRAW();
 	}
 

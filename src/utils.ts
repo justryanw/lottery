@@ -18,3 +18,10 @@ export function selectUniqueRandomFromArray<T>(array: T[], count: number): T[] {
 	const clone = [...array];
 	return arrayFrom(count, () => clone.splice(Math.random() * clone.length, 1)[0]);
 }
+
+export function formatCurrency(amountInPence: number) {
+	return (amountInPence / 100).toLocaleString('en-GB', {
+		style: 'currency',
+		currency: 'GBP',
+	});
+}

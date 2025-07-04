@@ -69,6 +69,7 @@ export class TestServer implements ServerAdaptor {
 		// const calledNumbers = [1, 2, 3, 4, 5, 6];
 
 		const matchingCount = selectedNumbers.filter(num => calledNumbers.includes(num)).length;
+		console.log(matchingCount);
 
 		this.session.gameState = {
 			selectedNumbers,

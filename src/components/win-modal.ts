@@ -1,14 +1,20 @@
 import { Color, Container } from "pixi.js";
-import { LayoutContainer, LayoutText } from "../layout";
+import { LayoutContainer, LayoutText, TextWithLayout } from "../layout";
 import { ContainerBackground } from "./container-background";
 import { THEME } from "../colors";
 import { Button } from "./button";
+import { formatCurrency } from "../utils";
+import { REDRAW, UI } from "../main";
 
 export class WinModal extends LayoutContainer {
+	closeButton: Button;
+	winText: TextWithLayout;
+
 	constructor(parent: Container) {
 		super();
 		parent.addChild(this);
 		this.layout.x.childAlignment = this.layout.y.childAlignment = 'center';
+		this.visible = false;
 
 		const fade = new ContainerBackground(this, new Color('black'), 0);
 		fade.alpha = 0.3;
@@ -24,12 +30,12 @@ export class WinModal extends LayoutContainer {
 		closeButtonRow.layout.x.sizing = 'grow';
 		closeButtonRow.layout.x.childAlignment = 'end';
 
-		const closeButton = new Button(closeButtonRow);
-		closeButton.layout.x.sizing = closeButton.layout.y.sizing = 20;
+		this.closeButton = new Button(closeButtonRow);
+		this.closeButton.layout.x.sizing = this.closeButton.layout.y.sizing = 20;
 
 		const closeButtonText = new LayoutText({ text: "x" })
 		closeButtonText.style.fill = THEME.symbol;
-		closeButton.addChild(closeButtonText);
+		this.closeButton.addChild(closeButtonText);
 
 		const textContainer = new LayoutContainer();
 		modal.addChild(textContainer);
@@ -42,9 +48,27 @@ export class WinModal extends LayoutContainer {
 		congratsText.layout.fontSize = 28;
 		textContainer.addChild(congratsText);
 
-		const winText = new LayoutText({ text: "You have won: £5.00" })
-		winText.style.fill = THEME.symbol;
-		winText.layout.fontSize = 20;
-		textContainer.addChild(winText);
+		this.winText = new LayoutText({ text: "You have won: £5.00" })
+		this.winText.style.fill = THEME.symbol;
+		this.winText.layout.fontSize = 20;
+		textContainer.addChild(this.winText);
+	}
+
+	public async show(winAmount: number) {
+		this.winText.text = `You have won ${formatCurrency(winAmount)}`;
+		this.visible = true;
+		UI.blurFilter.blur = 4;
+		REDRAW();
+
+		return new Promise<void>((resolve) => {
+			const onClick = () => {
+				this.closeButton.removeListener('pointerdown', onClick)
+				this.visible = false;
+				UI.blurFilter.blur = 0;
+				resolve();
+			}
+
+			this.closeButton.on('pointerdown', onClick);
+		});
 	}
 }
