@@ -1,10 +1,13 @@
 import { Container, Texture } from "pixi.js";
-import { LayoutContainer, LayoutSprite, LayoutText } from "../layout";
-import { ContainerBackground } from "./container-background";
-import { THEME } from "../colors";
-import { Button } from "./button";
+import { LayoutContainer, LayoutSprite, LayoutText } from "../../layout";
+import { ContainerBackground } from "../container-background";
+import { THEME } from "../../colors";
+import { Button } from "../button";
+import { LuckyDip as LuckyDipButton } from "./lucky-dip-button";
 
 export class Menu extends LayoutContainer {
+	public luckyDipButton: LuckyDipButton;
+
 	constructor(parent: Container) {
 		super();
 		parent.addChild(this);
@@ -21,15 +24,7 @@ export class Menu extends LayoutContainer {
 		buttonsRow.layout.childSpacing = 10;
 		new ContainerBackground(buttonsRow, THEME.backpane);
 
-		const luckyDipButton = new Button(buttonsRow);
-		luckyDipButton.layout.y.sizing = 50;
-		luckyDipButton.layout.x.sizing = 50;
-
-		const diceSprite = new LayoutSprite({ texture: Texture.from('dice') });
-		diceSprite.tint = THEME.symbol;
-		luckyDipButton.addChild(diceSprite);
-		diceSprite.layout.y.sizing = 20;
-		diceSprite.layout.x.sizing = 20;
+		this.luckyDipButton = new LuckyDipButton(buttonsRow);
 
 		const playButton = new Button(buttonsRow);
 		playButton.layout.y.sizing = 50;

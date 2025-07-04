@@ -13,3 +13,8 @@ export function arrayFrom<U>(
 }
 
 export function err(message: string) { return Result.error(new Error(message)) }
+
+export function selectUniqueRandomFromArray<T>(array: T[], count: number): T[] {
+	const clone = [...array];
+	return arrayFrom(count, () => clone.splice(Math.random() * clone.length, 1)[0]);
+}

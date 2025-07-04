@@ -4,19 +4,25 @@ import { ContainerBackground } from "./container-background";
 import { THEME } from "../colors";
 import { sound } from "@pixi/sound";
 
+export type ButtonState = 'up' | 'hover' | 'down';
+
 export class Button extends LayoutContainer {
 	background: ContainerBackground;
+	state: ButtonState = 'up';
+
+	pressed: boolean = false;
+	hovered: boolean = false;
 
 	public color: Color = THEME.button;
-	public hoverColor: Color = THEME.button;
-	public pressColor: Color = THEME.backpane;
-
 	public strokeColor: Color = THEME.button;
-	public strokeHoverColor: Color = THEME.hover;
-	public strokePressColor: Color = THEME.hover;
-
 	public strokeWidth = 0;
+
+	public hoverColor: Color = THEME.button;
+	public strokeHoverColor: Color = THEME.hover;
 	public strokeHoverWidth = 2;
+
+	public pressColor: Color = THEME.backpane;
+	public strokePressColor: Color = THEME.hover;
 	public strokePressWidth = 2;
 
 	constructor(
@@ -33,37 +39,48 @@ export class Button extends LayoutContainer {
 		this.eventMode = 'static';
 		this.cursor = 'pointer';
 
-		this.on('pointerover', () => {
-			this.background.color = this.hoverColor;
-			this.background.strokeColor = this.strokeHoverColor;
-			this.background.strokeWidth = this.strokeHoverWidth;
-			this.background.draw()
-		})
+		this.on('pointerover', () => this.setHovered(true));
+		this.on('pointerout', () => this.setHovered(false));
 
-		this.on('pointerout', () => {
-			this.background.color = this.color;
-			this.background.strokeColor = this.strokeColor;
-			this.background.strokeWidth = this.strokeWidth;
-			this.background.draw()
-		})
-
-		this.on('pointerdown', () => {
-			this.background.color = this.pressColor;
-			this.background.strokeColor = this.strokePressColor;
-			this.background.strokeWidth = this.strokePressWidth;
-			this.background.draw()
-
-			sound.play('glass-002', { volume: 0.15, speed: 1 + (Math.random() - 0.5) * 0.2 });
-		});
-
-		this.on('pointerup', this.pointerUp);
-		this.on('pointerupoutside', this.pointerUp);
+		this.on('pointerdown', () => this.setPressed(true));
+		this.on('pointerup', () => this.setPressed(false));
+		this.on('pointerupoutside', () => this.setPressed(false));
 	}
 
-	pointerUp() {
-		this.background.color = this.color;
-		this.background.strokeColor = this.strokeColor;
-		this.background.strokeWidth = this.strokeWidth;
-		this.background.draw()
+	setHovered(hovered: boolean) {
+		this.hovered = hovered;
+		if (!this.pressed) this.setState(hovered ? 'hover' : 'up');
+	}
+
+	setPressed(pressed: boolean) {
+		this.pressed = pressed;
+		this.setState(pressed ? 'down' : this.hovered ? 'hover' : 'up');
+		if (pressed) sound.play('glass-002', { volume: 0.15, speed: 1 + (Math.random() - 0.5) * 0.2 });
+	}
+
+	setState(state: ButtonState) {
+		this.state = state;
+		this.draw();
+	}
+
+	public draw() {
+		switch (this.state) {
+			case 'up':
+				this.background.color = this.color;
+				this.background.strokeColor = this.strokeColor;
+				this.background.strokeWidth = this.strokeWidth;
+				break;
+			case 'hover':
+				this.background.color = this.hoverColor;
+				this.background.strokeColor = this.strokeHoverColor;
+				this.background.strokeWidth = this.strokeHoverWidth;
+				break;
+			case 'down':
+				this.background.color = this.pressColor;
+				this.background.strokeColor = this.strokePressColor;
+				this.background.strokeWidth = this.strokePressWidth;
+				break;
+		}
+		this.background.draw();
 	}
 }

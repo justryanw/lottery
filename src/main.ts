@@ -7,10 +7,13 @@ import { Game } from "./game";
 import { TestServer } from "./server-adaptors/test-server";
 import { manifest } from "./manifest";
 import { THEME } from "./colors";
+import { arrayFrom } from "./utils";
 
 const DRAW_DEBUG_TEXT = false;
 const DRAW_DEBUG_GRAPHICS = true;
 export const DRAW_ALL_CONTAINERS = false;
+
+export const NUMBERS = arrayFrom(59, (i) => i + 1);
 
 export let GAME: Game;
 export let UI: Root;

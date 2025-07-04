@@ -2,7 +2,7 @@ import { Container } from "pixi.js";
 import { LayoutContainer } from "../layout";
 import { arrayFrom } from "../utils";
 import { LotteryNumber } from "./lottery-number";
-import { Menu } from "./menu";
+import { Menu } from "./menu/menu";
 import { ContainerBackground } from "./container-background";
 import { THEME } from "../colors";
 
