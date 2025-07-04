@@ -1,14 +1,16 @@
-import { Container, Texture } from "pixi.js";
-import { LayoutContainer, LayoutSprite, LayoutText, TextWithLayout } from "../../layout";
+import { Container } from "pixi.js";
+import { LayoutContainer, LayoutText, TextWithLayout } from "../../layout";
 import { ContainerBackground } from "../container-background";
 import { THEME } from "../../colors";
-import { Button } from "../button";
 import { LuckyDipButton } from "./lucky-dip-button";
 import { PlayButton } from "./play-button";
+import { ResetButton } from "./reset-button";
 
 export class Menu extends LayoutContainer {
 	public luckyDipButton: LuckyDipButton;
 	public playButton: PlayButton;
+	public resetButton: ResetButton;
+
 	public balanceText: TextWithLayout;
 
 	constructor(parent: Container) {
@@ -57,15 +59,6 @@ export class Menu extends LayoutContainer {
 
 		this.luckyDipButton = new LuckyDipButton(buttonsRow);
 		this.playButton = new PlayButton(buttonsRow);
-
-		const resetButton = new Button(buttonsRow);
-		resetButton.layout.y.sizing = 50;
-		resetButton.layout.x.sizing = 50;
-
-		const resetSprite = new LayoutSprite({ texture: Texture.from('arrow-counterclockwise') });
-		resetSprite.tint = THEME.symbol;
-		resetButton.addChild(resetSprite);
-		resetSprite.layout.y.sizing = 20;
-		resetSprite.layout.x.sizing = 20;
+		this.resetButton = new ResetButton(buttonsRow);
 	}
 }

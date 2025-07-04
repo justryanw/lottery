@@ -12,6 +12,7 @@ export class Call extends LayoutContainer {
 		super();
 		parent.addChild(this);
 		this.background = new ContainerBackground(this, THEME.button);
+		this.background.rounding = 20;
 		this.layout.x.sizing = this.layout.y.sizing = 40;
 		this.layout.x.childAlignment = this.layout.y.childAlignment = 'center';
 

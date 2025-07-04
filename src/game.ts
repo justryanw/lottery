@@ -19,9 +19,9 @@ export class Game {
 
 		await Result.fromAsync(this.server.play(this.selectedNumbers))
 			.onSuccess(() => this.gameLoop())
-			.onSuccess((gameState) => {
-				this.setCaller(gameState);
-				if (gameState.winAmount > 0) return WINMODAL.show(gameState.winAmount)
+			.onSuccess(({ winAmount, calledNumbers, selectedNumbers }) => {
+				this.setCaller(calledNumbers, selectedNumbers);
+				if (winAmount > 0) return WINMODAL.show(winAmount)
 			})
 			.map(() => this.server.getSession())
 			.fold(
@@ -47,16 +47,24 @@ export class Game {
 	setGameInProgres(inProgress: boolean) {
 		UI.menu.playButton.setActive(!inProgress);
 		UI.menu.luckyDipButton.setActive(!inProgress);
+		UI.menu.resetButton.setActive(!inProgress);
 		UI.lotteryNumbers.forEach((num) => num.setActive(!inProgress));
 	}
 
-	public setCaller(gameState: GameState) {
-		gameState.calledNumbers.forEach((num, i) => {
+	public setCaller(calledNumbers: number[], selectedNumbers: number[]) {
+		calledNumbers.forEach((num, i) => {
 			const call = UI.caller.calls[i];
 			call.text.text = num;
-			call.background.color = gameState.selectedNumbers.includes(num) ? THEME.select : THEME.button;
+			call.background.color = selectedNumbers.includes(num) ? THEME.select : THEME.button;
 		});
 		REDRAW();
+	}
+
+	public clearCaller() {
+		UI.caller.calls.forEach((call) => {
+			call.text.text = "";
+			call.background.color = THEME.button;
+		});
 	}
 
 	public toggleNumber(number: number) {
@@ -71,6 +79,21 @@ export class Game {
 	public luckyDip() {
 		this.selectedNumbers = selectUniqueRandomFromArray(NUMBERS, 6);
 		this.updateUiButtons();
+	}
+
+	public async reset() {
+		await Result.fromAsync(this.server.reset())
+			.map(() => this.server.getSession())
+			.fold(
+				(session) => this.session = session,
+				(error) => console.error(error),
+			);
+
+		this.selectedNumbers = [];
+		this.updateUiButtons();
+		this.clearCaller();
+		this.setGameInProgres(false);
+		this.setBalanceText(this.session);
 	}
 
 	updateUiButtons() {
