@@ -10,32 +10,44 @@ export class Game {
 	constructor(
 		protected readonly server: ServerAdaptor,
 		protected session: SessionState,
-	) { }
+	) {
+		this.setBalanceText(session);
+	}
 
 	public async play() {
 		this.setGameInProgres(true);
 		await Result.fromAsync(this.server.play(this.selectedNumbers))
-			.onFailure((error) => console.log(error))
 			.onSuccess((gameState) => {
 				this.session.gameState = gameState;
 				this.setCaller(gameState);
-				console.log("Succesfully started game");
 			})
 			.map(() => this.server.advanceStage())
 			.map(() => this.server.advanceStage())
 			.map(() => this.server.advanceStage())
 			.map(() => this.server.advanceStage())
 			.map(() => this.server.advanceStage())
+			.map(() => this.server.getSession())
+			.onSuccess((session) => {
+				this.session = session;
+				this.setBalanceText(session);
+			})
 			.onFailure((error) => console.log(error))
-			.onSuccess(() => {
-				console.log("Succesfully ended game");
-			});
 
 		this.setGameInProgres(false);
+		this.setBalanceText(this.session);
+	}
+
+	setBalanceText(session: SessionState) {
+		const formattedCurrency = session.currentBalance.toLocaleString('en-GB', {
+			style: 'currency',
+			currency: 'GBP',
+		});
+
+		UI.menu.balanceText.text = `Balance: ${formattedCurrency}`;
+		REDRAW();
 	}
 
 	setGameInProgres(inProgress: boolean) {
-		console.log(!inProgress);
 		UI.menu.playButton.setActive(!inProgress);
 		UI.menu.luckyDipButton.setActive(!inProgress);
 		UI.lotteryNumbers.forEach((num) => num.setActive(!inProgress));
@@ -44,12 +56,8 @@ export class Game {
 	public setCaller(gameState: GameState) {
 		gameState.calledNumbers.forEach((num, i) => {
 			const call = UI.caller.calls[i];
-			call.text.text = num
-			if (gameState.selectedNumbers.includes(num)) {
-				call.background.color = THEME.select;
-			} else {
-				call.background.color = THEME.button;
-			}
+			call.text.text = num;
+			call.background.color = gameState.selectedNumbers.includes(num) ? THEME.select : THEME.button;
 		});
 		REDRAW();
 	}

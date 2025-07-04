@@ -1,5 +1,5 @@
 import { Container, Texture } from "pixi.js";
-import { LayoutContainer, LayoutSprite, LayoutText } from "../../layout";
+import { LayoutContainer, LayoutSprite, LayoutText, TextWithLayout } from "../../layout";
 import { ContainerBackground } from "../container-background";
 import { THEME } from "../../colors";
 import { Button } from "../button";
@@ -9,6 +9,7 @@ import { PlayButton } from "./play-button";
 export class Menu extends LayoutContainer {
 	public luckyDipButton: LuckyDipButton;
 	public playButton: PlayButton;
+	public balanceText: TextWithLayout;
 
 	constructor(parent: Container) {
 		super();
@@ -43,10 +44,10 @@ export class Menu extends LayoutContainer {
 		info.layout.y.childAlignment = 'center';
 		info.layout.x.childAlignment = 'center';
 
-		const balanceText = new LayoutText({ text: "Balance: £100.00" });
-		info.addChild(balanceText);
-		balanceText.style.fill = THEME.symbol;
-		balanceText.layout.fontSize = 16;
+		this.balanceText = new LayoutText();
+		info.addChild(this.balanceText);
+		this.balanceText.style.fill = THEME.symbol;
+		this.balanceText.layout.fontSize = 16;
 
 		const buttonsRow = new LayoutContainer();
 		vert.addChild(buttonsRow);
