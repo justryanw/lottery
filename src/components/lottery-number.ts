@@ -27,14 +27,12 @@ export class LotteryNumber extends Button {
 
 	public toggleSelected(selected: boolean) {
 		if (selected) {
-			console.log(selected);
 			this.strokeHoverColor = new Color("#026AA2");
 			this.strokeWidth = 3;
-			this.draw();
 		} else {
 			this.strokeHoverColor = THEME.hover;
 			this.strokeWidth = 0;
-			this.draw();
 		}
+		this.draw();
 	}
 }

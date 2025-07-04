@@ -8,6 +8,7 @@ import { TestServer } from "./server-adaptors/test-server";
 import { manifest } from "./manifest";
 import { THEME } from "./colors";
 import { arrayFrom } from "./utils";
+import { Result } from "typescript-result";
 
 const DRAW_DEBUG_TEXT = false;
 const DRAW_DEBUG_GRAPHICS = true;
@@ -17,6 +18,8 @@ export const NUMBERS = arrayFrom(59, (i) => i + 1);
 
 export let GAME: Game;
 export let UI: Root;
+
+export let REDRAW: () => void;
 
 (async () => {
 	const app = new Application();
@@ -66,8 +69,11 @@ export let UI: Root;
 
 	app.renderer.on('resize', onResize);
 	onResize();
+	REDRAW = onResize;
 
 	const server = new TestServer();
-	GAME = new Game(server);
-	await GAME.play();
+
+	const session = await Result.fromAsync(server.getSession()).getOrThrow();
+
+	GAME = new Game(server, session);
 })();

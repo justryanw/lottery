@@ -5,28 +5,28 @@ import { LotteryNumber } from "./lottery-number";
 import { Menu } from "./menu/menu";
 import { ContainerBackground } from "./container-background";
 import { THEME } from "../colors";
+import { Caller } from "./caller/caller";
 
 export class Root extends LayoutContainer {
-	public caller = new LayoutContainer();
 	public mainSection = new LayoutContainer();
 	public numberGrid = new LayoutContainer();
 	public lotteryNumbers: LotteryNumber[] = [];
+
+	public caller: Caller;
 	public menu: Menu;
 
 	constructor(parent: Container) {
 		super();
 		parent.addChild(this);
 
-		this.addChild(this.caller);
-		this.caller.layout.y.sizing = 100;
-		this.caller.layout.x.sizing = 'grow';
-		this.caller.layout.y.childAlignment = 'center';
-		this.caller.layout.x.childAlignment = 'center';
+		const callerSection = new LayoutContainer();
+		this.addChild(callerSection);
+		callerSection.layout.y.sizing = 100;
+		callerSection.layout.x.sizing = 'grow';
+		callerSection.layout.y.childAlignment = 'center';
+		callerSection.layout.x.childAlignment = 'center';
 
-		const calls = new LayoutContainer();
-		this.caller.addChild(calls);
-		calls.layout.y.sizing = 50;
-		calls.layout.x.sizing = 300;
+		this.caller = new Caller(callerSection);
 
 		this.addChild(this.mainSection);
 		this.mainSection.layout.y.sizing = 'grow';

@@ -1,6 +1,7 @@
 import { Result } from "typescript-result";
 import { ServerAdaptor, SessionState } from "./server-adaptor";
-import { err } from "../utils";
+import { err, selectUniqueRandomFromArray } from "../utils";
+import { NUMBERS } from "../main";
 
 export class TestServer implements ServerAdaptor {
 	session: SessionState = {
@@ -18,7 +19,7 @@ export class TestServer implements ServerAdaptor {
 		if (this.session.gameState) return err("Cannot start new game while one is in progress.");
 		if (selectedNumbers.length !== 6) return err("6 numbers must be selected.");
 		this.startGame(selectedNumbers);
-		await new Promise(resolve => setTimeout(resolve, 1000));
+		await new Promise(resolve => setTimeout(resolve, 500));
 
 		if (!this.session.gameState) return err("Error creating game state.");
 		return Result.ok(this.session.gameState);
@@ -47,7 +48,7 @@ export class TestServer implements ServerAdaptor {
 	}
 
 	startGame(selectedNumbers: number[]) {
-		const calledNumbers = [2, 4, 8, 10, 32, 42];
+		const calledNumbers = selectUniqueRandomFromArray(NUMBERS, 6);
 
 		const matchingCount = selectedNumbers.filter(num => calledNumbers.includes(num)).length;
 

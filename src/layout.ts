@@ -32,15 +32,14 @@ class Layout {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function WithLayout<TBase extends new (...args: any[]) => any>(Base: TBase) {
+export function WithLayout<TBase extends new (...args: any[]) => any>(Base: TBase) {
 	return class extends Base {
 		layout: Layout = new Layout();
 	};
 }
 
-type ContainerWithLayout = Container & {
-	layout: Layout;
-};
+export type ContainerWithLayout = Container & { layout: Layout; };
+export type TextWithLayout = Text & { layout: Layout; };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function hasLayoutMixin(obj: any): obj is ContainerWithLayout {

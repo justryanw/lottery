@@ -1,12 +1,14 @@
 import { Container, Texture } from "pixi.js";
-import { LayoutContainer, LayoutSprite, LayoutText } from "../../layout";
+import { LayoutContainer, LayoutSprite } from "../../layout";
 import { ContainerBackground } from "../container-background";
 import { THEME } from "../../colors";
 import { Button } from "../button";
-import { LuckyDip as LuckyDipButton } from "./lucky-dip-button";
+import { LuckyDipButton } from "./lucky-dip-button";
+import { PlayButton } from "./play-button";
 
 export class Menu extends LayoutContainer {
 	public luckyDipButton: LuckyDipButton;
+	public playButton: PlayButton;
 
 	constructor(parent: Container) {
 		super();
@@ -25,15 +27,7 @@ export class Menu extends LayoutContainer {
 		new ContainerBackground(buttonsRow, THEME.backpane);
 
 		this.luckyDipButton = new LuckyDipButton(buttonsRow);
-
-		const playButton = new Button(buttonsRow);
-		playButton.layout.y.sizing = 50;
-		playButton.layout.x.sizing = 100;
-
-		const playButtonText = new LayoutText({ text: "Play" });
-		playButton.addChild(playButtonText);
-		playButtonText.layout.fontSize = 24;
-		playButtonText.style.fill = THEME.symbol;
+		this.playButton = new PlayButton(buttonsRow);
 
 		const resetButton = new Button(buttonsRow);
 		resetButton.layout.y.sizing = 50;

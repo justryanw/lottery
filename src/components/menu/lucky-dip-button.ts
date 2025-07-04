@@ -4,7 +4,7 @@ import { LayoutSprite } from "../../layout";
 import { THEME } from "../../colors";
 import { GAME } from "../../main";
 
-export class LuckyDip extends Button {
+export class LuckyDipButton extends Button {
 	constructor(parent: Container) {
 		super(parent);
 		this.layout.y.sizing = 50;

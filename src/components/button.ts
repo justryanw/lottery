@@ -36,7 +36,7 @@ export class Button extends LayoutContainer {
 		this.layout.x.childAlignment = 'center';
 		this.layout.y.childAlignment = 'center';
 
-		this.eventMode = 'static';
+		this.interactive = true;
 		this.cursor = 'pointer';
 
 		this.on('pointerover', () => this.setHovered(true));

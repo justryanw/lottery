@@ -1,5 +1,6 @@
-import { NUMBERS, UI } from "./main";
-import { ServerAdaptor } from "./server-adaptors/server-adaptor";
+import { Result } from "typescript-result";
+import { NUMBERS, REDRAW, UI } from "./main";
+import { ServerAdaptor, SessionState } from "./server-adaptors/server-adaptor";
 import { selectUniqueRandomFromArray } from "./utils";
 
 export class Game {
@@ -7,16 +8,27 @@ export class Game {
 
 	constructor(
 		protected readonly server: ServerAdaptor,
+		protected session: SessionState,
 	) { }
 
 	public async play() {
-		console.log(await this.server.play([5, 6, 7, 8, 9, 10]))
-		console.log(await this.server.advanceStage())
-		console.log(await this.server.advanceStage())
-		console.log(await this.server.advanceStage())
-		console.log(await this.server.advanceStage())
-		console.log(await this.server.advanceStage())
-		console.log((await this.server.getSession()).value)
+		await Result.fromAsync(this.server.play(this.selectedNumbers))
+			.onFailure((error) => console.log(error))
+			.onSuccess((gameState) => {
+				this.session.gameState = gameState;
+				this.session.gameState.calledNumbers.forEach((num, i) => UI.caller.calls[i].text.text = num);
+				REDRAW();
+				console.log("Succesfully started game");
+			})
+			.map(() => this.server.advanceStage())
+			.map(() => this.server.advanceStage())
+			.map(() => this.server.advanceStage())
+			.map(() => this.server.advanceStage())
+			.map(() => this.server.advanceStage())
+			.onFailure((error) => console.log(error))
+			.onSuccess(() => {
+				console.log("Succesfully ended game");
+			})
 	}
 
 	public toggleNumber(number: number) {
@@ -31,7 +43,6 @@ export class Game {
 	public luckyDip() {
 		this.selectedNumbers = selectUniqueRandomFromArray(NUMBERS, 6);
 		this.updateUiButtons();
-		console.log(this.selectedNumbers);
 	}
 
 	updateUiButtons() {
